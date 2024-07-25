@@ -902,8 +902,8 @@ class Chooser:
             ].icon_mask_texture
         except Exception:
             logging.exception('Error updating char icon list')
-            tex_name = 'neoSillyIcon'
-            tint_tex_name = 'neoSillyIconColorMask'
+            tex_name = 'neoSpazIcon'
+            tint_tex_name = 'neoSpazIconColorMask'
 
         tex = _bascenev1.gettexture(tex_name)
         tint_tex = _bascenev1.gettexture(tint_tex_name)

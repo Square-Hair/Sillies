@@ -372,17 +372,17 @@ class ProfileBrowserWindow(bui.Window):
         assert self._profiles is not None
         items = list(self._profiles.items())
         items.sort(key=lambda x: asserttype(x[0], str).lower())
-        sillyzes = silly_appearance.get_appearances()
-        sillyzes.sort()
+        sillies = silly_appearance.get_appearances()
+        sillies.sort()
         icon_textures = [
             bui.gettexture(bui.app.classic.silly_appearances[s].icon_texture)
-            for s in sillyzes
+            for s in sillies
         ]
         icon_tint_textures = [
             bui.gettexture(
                 bui.app.classic.silly_appearances[s].icon_mask_texture
             )
-            for s in sillyzes
+            for s in sillies
         ]
         index = 0
         y_val = 35 * (len(self._profiles) - 1)
@@ -406,9 +406,9 @@ class ProfileBrowserWindow(bui.Window):
             )
 
             try:
-                char_index = sillyzes.index(p_info['character'])
+                char_index = sillies.index(p_info['character'])
             except Exception:
-                char_index = sillyzes.index('Silly')
+                char_index = sillies.index('Silly')
 
             assert isinstance(tval, str)
             txtw = bui.textwidget(

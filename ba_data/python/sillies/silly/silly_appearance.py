@@ -1,6 +1,6 @@
 # Released under the MIT License. See LICENSE for details.
 #
-"""Appearance functionality for sillyzes."""
+"""Appearance functionality for sillies."""
 from __future__ import annotations
 
 import bascenev1 as bs
@@ -113,7 +113,7 @@ class Appearance:
         self.death_sounds: list[str] = []
         self.pickup_sounds: list[str] = []
         self.fall_sounds: list[str] = []
-        self.style = 'silly'
+        self.style = 'spaz'
         self.default_color: tuple[float, float, float] | None = None
         self.default_highlight: tuple[float, float, float] | None = None
 
@@ -127,36 +127,36 @@ def register_appearances() -> None:
 
     # Silly #######################################
     t = Appearance('Silly')
-    t.color_texture = 'neoSillyColor'
-    t.color_mask_texture = 'neoSillyColorMask'
-    t.icon_texture = 'neoSillyIcon'
-    t.icon_mask_texture = 'neoSillyIconColorMask'
-    t.head_mesh = 'neoSillyHead'
-    t.torso_mesh = 'neoSillyTorso'
-    t.pelvis_mesh = 'neoSillyPelvis'
-    t.upper_arm_mesh = 'neoSillyUpperArm'
-    t.forearm_mesh = 'neoSillyForeArm'
-    t.hand_mesh = 'neoSillyHand'
-    t.upper_leg_mesh = 'neoSillyUpperLeg'
-    t.lower_leg_mesh = 'neoSillyLowerLeg'
-    t.toes_mesh = 'neoSillyToes'
-    t.jump_sounds = ['sillyJump01', 'sillyJump02', 'sillyJump03', 'sillyJump04']
+    t.color_texture = 'neoSpazColor'
+    t.color_mask_texture = 'neoSpazColorMask'
+    t.icon_texture = 'neoSpazIcon'
+    t.icon_mask_texture = 'neoSpazIconColorMask'
+    t.head_mesh = 'neoSpazHead'
+    t.torso_mesh = 'neoSpazTorso'
+    t.pelvis_mesh = 'neoSpazPelvis'
+    t.upper_arm_mesh = 'neoSpazUpperArm'
+    t.forearm_mesh = 'neoSpazForeArm'
+    t.hand_mesh = 'neoSpazHand'
+    t.upper_leg_mesh = 'neoSpazUpperLeg'
+    t.lower_leg_mesh = 'neoSpazLowerLeg'
+    t.toes_mesh = 'neoSpazToes'
+    t.jump_sounds = ['spazJump01', 'spazJump02', 'spazJump03', 'spazJump04']
     t.attack_sounds = [
-        'sillyAttack01',
-        'sillyAttack02',
-        'sillyAttack03',
-        'sillyAttack04',
+        'spazAttack01',
+        'spazAttack02',
+        'spazAttack03',
+        'spazAttack04',
     ]
     t.impact_sounds = [
-        'sillyImpact01',
-        'sillyImpact02',
-        'sillyImpact03',
-        'sillyImpact04',
+        'spazImpact01',
+        'spazImpact02',
+        'spazImpact03',
+        'spazImpact04',
     ]
-    t.death_sounds = ['sillyDeath01']
-    t.pickup_sounds = ['sillyPickup01']
-    t.fall_sounds = ['sillyFall01']
-    t.style = 'silly'
+    t.death_sounds = ['spazDeath01']
+    t.pickup_sounds = ['spazPickup01']
+    t.fall_sounds = ['spazFall01']
+    t.style = 'spaz'
 
     # Zoe #####################################
     t = Appearance('Zoe')
@@ -568,7 +568,7 @@ def register_appearances() -> None:
     t.death_sounds = ['jumpsuitDeath']
     t.pickup_sounds = jumpsuit_sounds
     t.fall_sounds = ['jumpsuitFall']
-    t.style = 'silly'
+    t.style = 'spaz'
     t.default_color = (0.3, 0.5, 0.8)
     t.default_highlight = (1, 0, 0)
 
@@ -600,7 +600,7 @@ def register_appearances() -> None:
     t.death_sounds = ['actionHeroDeath']
     t.pickup_sounds = action_hero_sounds
     t.fall_sounds = ['actionHeroFall']
-    t.style = 'silly'
+    t.style = 'spaz'
     t.default_color = (0.3, 0.5, 0.8)
     t.default_highlight = (1, 0, 0)
 
@@ -627,7 +627,7 @@ def register_appearances() -> None:
     t.death_sounds = ['assassinDeath']
     t.pickup_sounds = assassin_sounds
     t.fall_sounds = ['assassinFall']
-    t.style = 'silly'
+    t.style = 'spaz'
     t.default_color = (0.3, 0.5, 0.8)
     t.default_highlight = (1, 0, 0)
 
@@ -654,7 +654,7 @@ def register_appearances() -> None:
     t.death_sounds = ['wizardDeath']
     t.pickup_sounds = wizard_sounds
     t.fall_sounds = ['wizardFall']
-    t.style = 'silly'
+    t.style = 'spaz'
     t.default_color = (0.2, 0.4, 1.0)
     t.default_highlight = (0.06, 0.15, 0.4)
 
@@ -681,7 +681,7 @@ def register_appearances() -> None:
     t.death_sounds = ['cowboyDeath']
     t.pickup_sounds = cowboy_sounds
     t.fall_sounds = ['cowboyFall']
-    t.style = 'silly'
+    t.style = 'spaz'
     t.default_color = (0.3, 0.5, 0.8)
     t.default_highlight = (1, 0, 0)
 
@@ -708,7 +708,7 @@ def register_appearances() -> None:
     t.death_sounds = ['witchDeath']
     t.pickup_sounds = witch_sounds
     t.fall_sounds = ['witchFall']
-    t.style = 'silly'
+    t.style = 'spaz'
     t.default_color = (0.3, 0.5, 0.8)
     t.default_highlight = (1, 0, 0)
 
@@ -735,7 +735,7 @@ def register_appearances() -> None:
     t.death_sounds = ['warriorDeath']
     t.pickup_sounds = warrior_sounds
     t.fall_sounds = ['warriorFall']
-    t.style = 'silly'
+    t.style = 'spaz'
     t.default_color = (0.3, 0.5, 0.8)
     t.default_highlight = (1, 0, 0)
 
@@ -762,7 +762,7 @@ def register_appearances() -> None:
     t.death_sounds = ['superheroDeath']
     t.pickup_sounds = superhero_sounds
     t.fall_sounds = ['superheroFall']
-    t.style = 'silly'
+    t.style = 'spaz'
     t.default_color = (0.3, 0.5, 0.8)
     t.default_highlight = (1, 0, 0)
 
@@ -789,7 +789,7 @@ def register_appearances() -> None:
     t.death_sounds = ['alienDeath']
     t.pickup_sounds = alien_sounds
     t.fall_sounds = ['alienFall']
-    t.style = 'silly'
+    t.style = 'spaz'
     t.default_color = (0.3, 0.5, 0.8)
     t.default_highlight = (1, 0, 0)
 
@@ -816,7 +816,7 @@ def register_appearances() -> None:
     t.death_sounds = ['oldLadyDeath']
     t.pickup_sounds = old_lady_sounds
     t.fall_sounds = ['oldLadyFall']
-    t.style = 'silly'
+    t.style = 'spaz'
     t.default_color = (0.3, 0.5, 0.8)
     t.default_highlight = (1, 0, 0)
 
@@ -843,7 +843,7 @@ def register_appearances() -> None:
     t.death_sounds = ['gladiatorDeath']
     t.pickup_sounds = gladiator_sounds
     t.fall_sounds = ['gladiatorFall']
-    t.style = 'silly'
+    t.style = 'spaz'
     t.default_color = (0.3, 0.5, 0.8)
     t.default_highlight = (1, 0, 0)
 
@@ -870,7 +870,7 @@ def register_appearances() -> None:
     t.death_sounds = ['wrestlerDeath']
     t.pickup_sounds = wrestler_sounds
     t.fall_sounds = ['wrestlerFall']
-    t.style = 'silly'
+    t.style = 'spaz'
     t.default_color = (0.3, 0.5, 0.8)
     t.default_highlight = (1, 0, 0)
 
@@ -902,7 +902,7 @@ def register_appearances() -> None:
     t.death_sounds = ['operaSingerDeath']
     t.pickup_sounds = opera_singer_sounds
     t.fall_sounds = ['operaSingerFall']
-    t.style = 'silly'
+    t.style = 'spaz'
     t.default_color = (0.3, 0.5, 0.8)
     t.default_highlight = (1, 0, 0)
 
@@ -956,7 +956,7 @@ def register_appearances() -> None:
     t.death_sounds = ['robotDeath']
     t.pickup_sounds = robot_sounds
     t.fall_sounds = ['robotFall']
-    t.style = 'silly'
+    t.style = 'spaz'
     t.default_color = (0.3, 0.5, 0.8)
     t.default_highlight = (1, 0, 0)
 

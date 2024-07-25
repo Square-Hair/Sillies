@@ -46,20 +46,20 @@ class CharacterPicker(PopupWindow):
         self._transitioning_out = False
 
         # make a list of silly icons
-        self._sillyzes = silly_appearance.get_appearances()
-        self._sillyzes.sort()
+        self._sillies = silly_appearance.get_appearances()
+        self._sillies.sort()
         self._icon_textures = [
             bui.gettexture(bui.app.classic.silly_appearances[s].icon_texture)
-            for s in self._sillyzes
+            for s in self._sillies
         ]
         self._icon_tint_textures = [
             bui.gettexture(
                 bui.app.classic.silly_appearances[s].icon_mask_texture
             )
-            for s in self._sillyzes
+            for s in self._sillies
         ]
 
-        count = len(self._sillyzes)
+        count = len(self._sillies)
 
         columns = 3
         rows = int(math.ceil(float(count) / columns))
@@ -135,19 +135,19 @@ class CharacterPicker(PopupWindow):
                     tint_color=tint_color,
                     tint2_color=tint2_color,
                     on_activate_call=bui.Call(
-                        self._select_character, self._sillyzes[index]
+                        self._select_character, self._sillies[index]
                     ),
                     position=pos,
                 )
                 bui.widget(edit=btn, show_buffer_top=60, show_buffer_bottom=60)
-                if self._sillyzes[index] == selected_character:
+                if self._sillies[index] == selected_character:
                     bui.containerwidget(
                         edit=self._subcontainer,
                         selected_child=btn,
                         visible_child=btn,
                     )
                 name = bui.Lstr(
-                    translate=('characterNames', self._sillyzes[index])
+                    translate=('characterNames', self._sillies[index])
                 )
                 bui.textwidget(
                     parent=self._subcontainer,

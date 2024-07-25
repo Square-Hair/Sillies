@@ -232,7 +232,7 @@ class CaptureTheFlagGame(bs.TeamGameActivity[Player, Team]):
             flagmaterial=flagmat,
         )
 
-        # Some parts of our sillyzes don't collide physically with our
+        # Some parts of our sillies don't collide physically with our
         # flags but generate callbacks.
         silly_mat_no_flag_physical.add_actions(
             conditions=('they_have_material', flagmat),
@@ -251,7 +251,7 @@ class CaptureTheFlagGame(bs.TeamGameActivity[Player, Team]):
             ),
         )
 
-        # Other parts of our sillyzes don't collide with our flags at all.
+        # Other parts of our sillies don't collide with our flags at all.
         silly_mat_no_flag_collide.add_actions(
             conditions=('they_have_material', flagmat),
             actions=('modify_part_collision', 'collide', False),
@@ -579,7 +579,7 @@ class CaptureTheFlagGame(bs.TeamGameActivity[Player, Team]):
         position: Sequence[float] | None = None,
         angle: float | None = None,
     ) -> PlayerSilly:
-        """Intercept new sillyzes and add our team material for them."""
+        """Intercept new sillies and add our team material for them."""
         silly = super().spawn_player_silly(player, position, angle)
         player = silly.getplayer(Player, True)
         team: Team = player.team

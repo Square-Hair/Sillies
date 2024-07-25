@@ -135,7 +135,7 @@ class SillyFactory:
         player_material = shared.player_material
         region_material = shared.region_material
 
-        # Send footing messages to sillyzes so they know when they're on
+        # Send footing messages to sillies so they know when they're on
         # solid ground.
         # Eww; this probably should just be built into the silly node.
         self.roller_material.add_actions(

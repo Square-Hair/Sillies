@@ -112,7 +112,7 @@ class Silly(bs.Actor):
         self._cursed = False
         self._connected_to_player: bs.Player | None = None
         materials = [
-            factory.Silly_material,
+            factory.silly_material,
             shared.object_material,
             shared.player_material,
         ]
@@ -129,7 +129,7 @@ class Silly(bs.Actor):
         punchmats = (factory.punch_material, shared.attack_material)
         pickupmats = (factory.pickup_material, shared.pickup_material)
         self.node: bs.Node = bs.newnode(
-            type='Silly',
+            type='spaz',
             delegate=self,
             attrs={
                 'color': color,
@@ -1249,7 +1249,7 @@ class Silly(bs.Actor):
 
                 # If its something besides another Silly, just do a muffled
                 # punch sound.
-                if node.getnodetype() != 'Silly':
+                if node.getnodetype() != 'spaz':
                     sounds = SillyFactory.get().impact_sounds_medium
                     sound = sounds[random.randrange(len(sounds))]
                     sound.play(1.0, position=self.node.position)

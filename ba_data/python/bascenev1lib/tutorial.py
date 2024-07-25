@@ -228,7 +228,7 @@ class TutorialActivity(bs.Activity[Player, Team]):
         self.bomb_image_color = (1.0, 1.0, 1.0)
         self.pickup_image_color = (1.0, 1.0, 1.0)
         self.control_ui_nodes: list[bs.Node] = []
-        self.sillyzes: dict[int, Silly] = {}
+        self.sillies: dict[int, Silly] = {}
         self.jump_image_color = (1.0, 1.0, 1.0)
         self._entries: deque[Any] = deque()
         self._read_entries_timer: bs.Timer | None = None
@@ -473,9 +473,9 @@ class TutorialActivity(bs.Activity[Player, Team]):
 
                     assert a.text
                     a.text.text = ''
-                    for silly in list(a.sillyzes.values()):
+                    for silly in list(a.sillies.values()):
                         silly.handlemessage(bs.DieMessage(immediate=True))
-                    a.sillyzes = {}
+                    a.sillies = {}
                     a.current_silly = None
                     for n in a.control_ui_nodes:
                         n.opacity = 0.0
@@ -507,8 +507,8 @@ class TutorialActivity(bs.Activity[Player, Team]):
 
                 def run(self, a: TutorialActivity) -> None:
                     if self._explode:
-                        a.sillyzes[self._num].shatter()
-                    del a.sillyzes[self._num]
+                        a.sillies[self._num].shatter()
+                    del a.sillies[self._num]
 
             class SpawnSilly:
                 def __init__(
@@ -536,7 +536,7 @@ class TutorialActivity(bs.Activity[Player, Team]):
                     # to them
                     pos: Sequence[float]
                     if self._relative_to is not None:
-                        snode = a.sillyzes[self._relative_to].node
+                        snode = a.sillies[self._relative_to].node
                         assert snode
                         their_pos = snode.position
                         pos = (
@@ -548,12 +548,12 @@ class TutorialActivity(bs.Activity[Player, Team]):
                         pos = self._position
 
                     # if there's already a silly at this spot, insta-kill it
-                    if self._num in a.sillyzes:
-                        a.sillyzes[self._num].handlemessage(
+                    if self._num in a.sillies:
+                        a.sillies[self._num].handlemessage(
                             bs.DieMessage(immediate=True)
                         )
 
-                    s = a.sillyzes[self._num] = Silly(
+                    s = a.sillies[self._num] = Silly(
                         color=self._color,
                         start_invincible=self._flash,
                         demo_mode=True,
@@ -589,7 +589,7 @@ class TutorialActivity(bs.Activity[Player, Team]):
                     # to them.
                     pos: Sequence[float]
                     if self._relative_to is not None:
-                        snode = a.sillyzes[self._relative_to].node
+                        snode = a.sillies[self._relative_to].node
                         assert snode
                         their_pos = snode.position
                         pos = (
@@ -803,7 +803,7 @@ class TutorialActivity(bs.Activity[Player, Team]):
                     if self._silly_num is None:
                         s = a.current_silly
                     else:
-                        s = a.sillyzes[self._silly_num]
+                        s = a.sillies[self._silly_num]
                     assert s and s.node
                     t = list(s.node.position)
                     print('RestorePos(' + str((t[0], t[1] - 1.0, t[2])) + '),')
@@ -832,7 +832,7 @@ class TutorialActivity(bs.Activity[Player, Team]):
                     if self._silly_num is None:
                         s = a.current_silly
                     else:
-                        s = a.sillyzes[self._silly_num]
+                        s = a.sillies[self._silly_num]
                     assert s and s.node
                     if self._celebrate_type == 'right':
                         s.node.handlemessage('celebrate_r', self._duration)

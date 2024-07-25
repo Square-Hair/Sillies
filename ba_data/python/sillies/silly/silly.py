@@ -93,7 +93,7 @@ class Silly(bs.Actor):
     default_bomb_count = 1
     default_bomb_type = 'normal'
     default_boxing_gloves = False
-    default_shields = True
+    default_shields = False
     default_hitpoints = BASE_HEALTH
 
     def __init__(
@@ -871,14 +871,26 @@ class Silly(bs.Actor):
             logging.exception('Can\'t equip shields; no node.')
             return
 
+        neon_power = 1.5
+        shield_color = (max(1.0, self.node.color[0] * 2),
+                        max(1.0,self.node.color[1] * 2),
+                        max(1.0,self.node.color[2] * 2))
+
+        # Tone down neon colors
+        if (self.node.color[0] + self.node.color[1] + self.node.color[2]) > 3.0:
+            neon_power = max(self.node.color[0], self.node.color[1], self.node.color[2])
+
         factory = SillyFactory.get()
         if self.shield is None:
             self.shield = bs.newnode(
                 'shield',
                 owner=self.node,
-                attrs={'color': (0.3, 0.2, 2.0), 'radius': 1.3},
+                attrs={'color': (shield_color[0] / neon_power,
+                                 shield_color[1] / neon_power,
+                                 shield_color[2] / neon_power),
+                       'radius': 0.7},
             )
-            self.node.connectattr('position_center', self.shield, 'position')
+            self.node.connectattr('position', self.shield, 'position')
 
             self.impact_scale = SHIELD_IMPACT_SCALE
         self.shield_hitpoints = self.shield_hitpoints_max = 650

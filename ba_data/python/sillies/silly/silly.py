@@ -12,6 +12,7 @@ import sillies.lib as lib
 from typing import TYPE_CHECKING, override
 
 import bascenev1 as bs
+from enum import Enum
 
 from bascenev1lib.actor.bomb import Bomb, Blast
 from bascenev1lib.actor.powerupbox import PowerupBoxFactory, PowerupBox
@@ -26,6 +27,16 @@ POWERUP_WEAR_OFF_TIME = 20000
 # Obsolete - just used for demo guy now.
 BASE_PUNCH_POWER_SCALE = 1.2
 BASE_PUNCH_COOLDOWN = 400
+JUMP_TIME = 1
+
+class SillyState(Enum):
+    """Silly's current state.
+
+    Category: Enums
+    """
+
+    ACTIONABLE  = 'Actionable'
+    JUMPING     = 'Jumping'
 
 
 class PickupMessage:
@@ -52,9 +63,7 @@ class Silly(bs.Actor):
 
     A Silly is the standard little humanoid character in the game.
     It can be controlled by a player or by AI, and can have
-    various different appearances.  The name 'Silly' is not to be
-    confused with the 'Silly' character in the game, which is just
-    one of the skins available for instances of this class.
+    various different appearances.
     """
 
     # pylint: disable=too-many-public-methods
@@ -182,6 +191,8 @@ class Silly(bs.Actor):
             'x':0,
             'y':0,
         }
+        self._state: SillyState = SillyState.ACTIONABLE
+        self._state_timer: bs.Node | None = None
 
         self.hitpoints = self.default_hitpoints
         self.hitpoints_max = self.default_hitpoints
@@ -219,9 +230,6 @@ class Silly(bs.Actor):
         self.last_run_time_ms = -9999
         self._last_run_value = 0.0
         self.last_bomb_time_ms = -9999
-        self._turbo_filter_times: dict[str, int] = {}
-        self._turbo_filter_time_bucket = 0
-        self._turbo_filter_counts: dict[str, int] = {}
         self.frozen = False
         self.shattered = False
         self._last_hit_time: int | None = None
@@ -242,6 +250,21 @@ class Silly(bs.Actor):
     @override
     def exists(self) -> bool:
         return bool(self.node)
+
+    def _set_state(self, state: SillyState) -> None:
+        time = 0.0
+        match state:
+            case SillyState.ACTIONABLE:
+                return
+            case SillyState.JUMPING:
+                time = JUMP_TIME
+
+        self._state = state
+        self._state_timer = bs.Timer(time, self._state_timer_timeout)
+
+    def _state_timer_timeout(self) -> None:
+        self._state = SillyState.ACTIONABLE
+        self._state_timer = None
 
     def get_direction_facing(self, scale = 1.0):
         """
@@ -305,55 +328,6 @@ class Silly(bs.Actor):
                 'scale',
                 {0.0: self._score_text.scale, 0.2: 0.0},
             )
-
-    def _turbo_filter_add_press(self, source: str) -> None:
-        """
-        Can pass all button presses through here; if we see an obscene number
-        of them in a short time let's shame/pushish this guy for using turbo.
-        """
-        t_ms = int(bs.basetime() * 1000.0)
-        assert isinstance(t_ms, int)
-        t_bucket = int(t_ms / 1000)
-        if t_bucket == self._turbo_filter_time_bucket:
-            # Add only once per timestep (filter out buttons triggering
-            # multiple actions).
-            if t_ms != self._turbo_filter_times.get(source, 0):
-                self._turbo_filter_counts[source] = (
-                    self._turbo_filter_counts.get(source, 0) + 1
-                )
-                self._turbo_filter_times[source] = t_ms
-                # (uncomment to debug; prints what this count is at)
-                # bs.broadcastmessage( str(source) + " "
-                #                   + str(self._turbo_filter_counts[source]))
-                if self._turbo_filter_counts[source] == 15:
-                    # Knock 'em out.  That'll learn 'em.
-                    assert self.node
-                    self.node.handlemessage('knockout', 500.0)
-
-                    # Also issue periodic notices about who is turbo-ing.
-                    now = bs.apptime()
-                    assert bs.app.classic is not None
-                    if now > bs.app.classic.last_Silly_turbo_warn_time + 30.0:
-                        bs.app.classic.last_Silly_turbo_warn_time = now
-                        bs.broadcastmessage(
-                            bs.Lstr(
-                                translate=(
-                                    'statements',
-                                    (
-                                        'Warning to ${NAME}:  '
-                                        'turbo / button-spamming knocks'
-                                        ' you out.'
-                                    ),
-                                ),
-                                subs=[('${NAME}', self.node.name)],
-                            ),
-                            color=(1, 0.5, 0),
-                        )
-                        bs.getsound('error').play()
-        else:
-            self._turbo_filter_times = {}
-            self._turbo_filter_time_bucket = t_bucket
-            self._turbo_filter_counts = {source: 1}
 
     def set_score_text(
         self,
@@ -431,6 +405,7 @@ class Silly(bs.Actor):
 
         if self.touching_ground:
             self.jump()
+            self._set_state(SillyState.JUMPING)
             self.last_jump_time_ms = None
         else:
             self.air_dash()
@@ -496,8 +471,7 @@ class Silly(bs.Actor):
         assert isinstance(t_ms, int)
         if t_ms - self.last_pickup_time_ms >= self._pickup_cooldown:
             self.last_pickup_time_ms = t_ms
-            if self.touching_ground:
-                self.dodge()
+            self.drop_bomb()
 
     def on_pickup_release(self) -> None:
         """
@@ -507,6 +481,92 @@ class Silly(bs.Actor):
         if not self.node:
             return
         self.node.pickup_pressed = False
+
+    def on_hold_position_press(self) -> None:
+        """
+        Called to 'press hold-position' on this Silly;
+        used for player or AI connections.
+        """
+        if not self.node:
+            return
+        self.node.hold_position_pressed = True
+
+    def on_hold_position_release(self) -> None:
+        """
+        Called to 'release hold-position' on this Silly;
+        used for player or AI connections.
+        """
+        if not self.node:
+            return
+        self.node.hold_position_pressed = False
+
+    def on_punch_press(self) -> None:
+        """
+        Called to 'press punch' on this Silly;
+        used for player or AI connections.
+        """
+        if not self.node or self.frozen or self.node.knockout > 0.0:
+            return
+        t_ms = int(bs.time() * 1000.0)
+        assert isinstance(t_ms, int)
+        if t_ms - self.last_punch_time_ms >= self._punch_cooldown:
+            if self.punch_callback is not None:
+                self.punch_callback(self)
+            self._punched_nodes = set()  # Reset this.
+            self.last_punch_time_ms = t_ms
+            self.node.punch_pressed = True
+            if not self.node.hold_node:
+                bs.timer(
+                    0.1,
+                    bs.WeakCall(
+                        self._safe_play_sound,
+                        SillyFactory.get().swish_sound,
+                        0.8,
+                    ),
+                )
+
+    def _safe_play_sound(self, sound: bs.Sound, volume: float) -> None:
+        """Plays a sound at our position if we exist."""
+        if self.node:
+            sound.play(volume, self.node.position)
+
+    def on_punch_release(self) -> None:
+        """
+        Called to 'release punch' on this Silly;
+        used for player or AI connections.
+        """
+        if not self.node:
+            return
+        self.node.punch_pressed = False
+
+    def on_bomb_press(self) -> None:
+        """
+        Called to 'press bomb' on this Silly;
+        used for player or AI connections.
+        """
+        if (
+            not self.node
+            or self._dead
+            or self.frozen
+            or self.node.knockout > 0.0
+        ):
+            return
+        t_ms = int(bs.time() * 1000.0)
+        assert isinstance(t_ms, int)
+        if t_ms - self.last_bomb_time_ms >= self._bomb_cooldown:
+            self.last_bomb_time_ms = t_ms
+            self.node.bomb_pressed = True
+            if self.touching_ground:
+                self.dodge()
+
+    def on_bomb_release(self) -> None:
+        """
+        Called to 'release bomb' on this Silly;
+        used for player or AI connections.
+        """
+        if not self.node:
+            return
+        self.node.bomb_pressed = False
 
     def dodge(self) -> None:
         xforce = -30
@@ -552,95 +612,6 @@ class Silly(bs.Actor):
                                     original_force * length, 0, 0, 0,
                                     vel_norm[0], 0, vel_norm[2])
 
-    def on_hold_position_press(self) -> None:
-        """
-        Called to 'press hold-position' on this Silly;
-        used for player or AI connections.
-        """
-        if not self.node:
-            return
-        self.node.hold_position_pressed = True
-        self._turbo_filter_add_press('holdposition')
-
-    def on_hold_position_release(self) -> None:
-        """
-        Called to 'release hold-position' on this Silly;
-        used for player or AI connections.
-        """
-        if not self.node:
-            return
-        self.node.hold_position_pressed = False
-
-    def on_punch_press(self) -> None:
-        """
-        Called to 'press punch' on this Silly;
-        used for player or AI connections.
-        """
-        if not self.node or self.frozen or self.node.knockout > 0.0:
-            return
-        t_ms = int(bs.time() * 1000.0)
-        assert isinstance(t_ms, int)
-        if t_ms - self.last_punch_time_ms >= self._punch_cooldown:
-            if self.punch_callback is not None:
-                self.punch_callback(self)
-            self._punched_nodes = set()  # Reset this.
-            self.last_punch_time_ms = t_ms
-            self.node.punch_pressed = True
-            if not self.node.hold_node:
-                bs.timer(
-                    0.1,
-                    bs.WeakCall(
-                        self._safe_play_sound,
-                        SillyFactory.get().swish_sound,
-                        0.8,
-                    ),
-                )
-        self._turbo_filter_add_press('punch')
-
-    def _safe_play_sound(self, sound: bs.Sound, volume: float) -> None:
-        """Plays a sound at our position if we exist."""
-        if self.node:
-            sound.play(volume, self.node.position)
-
-    def on_punch_release(self) -> None:
-        """
-        Called to 'release punch' on this Silly;
-        used for player or AI connections.
-        """
-        if not self.node:
-            return
-        self.node.punch_pressed = False
-
-    def on_bomb_press(self) -> None:
-        """
-        Called to 'press bomb' on this Silly;
-        used for player or AI connections.
-        """
-        if (
-            not self.node
-            or self._dead
-            or self.frozen
-            or self.node.knockout > 0.0
-        ):
-            return
-        t_ms = int(bs.time() * 1000.0)
-        assert isinstance(t_ms, int)
-        if t_ms - self.last_bomb_time_ms >= self._bomb_cooldown:
-            self.last_bomb_time_ms = t_ms
-            self.node.bomb_pressed = True
-            if not self.node.hold_node:
-                self.drop_bomb()
-        self._turbo_filter_add_press('bomb')
-
-    def on_bomb_release(self) -> None:
-        """
-        Called to 'release bomb' on this Silly;
-        used for player or AI connections.
-        """
-        if not self.node:
-            return
-        self.node.bomb_pressed = False
-
     def on_run(self, value: float) -> None:
         """
         Called to 'press run' on this Silly;
@@ -652,12 +623,6 @@ class Silly(bs.Actor):
         assert isinstance(t_ms, int)
         self.last_run_time_ms = t_ms
         self.node.run = value
-
-        # Filtering these events would be tough since its an analog
-        # value, but lets still pass full 0-to-1 presses along to
-        # the turbo filter to punish players if it looks like they're turbo-ing.
-        if self._last_run_value < 0.01 and value > 0.99:
-            self._turbo_filter_add_press('run')
 
         self._last_run_value = value
 
@@ -672,7 +637,6 @@ class Silly(bs.Actor):
         # input events get clustered up during net-games and we'd wind up
         # killing a lot and making it hard to fly.. should look into this.
         self.node.fly_pressed = True
-        self._turbo_filter_add_press('fly')
 
     def on_fly_release(self) -> None:
         """
@@ -1412,6 +1376,21 @@ class Silly(bs.Actor):
                         ),
                     )
                 )
+                if self._state == SillyState.JUMPING:
+                    xforce = 4
+                    yforce = 35
+
+                    for x in range(10):
+                        v = node.velocity
+                        node.handlemessage('impulse', node.position[0], node.position[1], node.position[2],
+                                                0, 25, 0,
+                                                yforce, 0.05, 0, 0,
+                                                0, 20*400, 0)
+
+                        node.handlemessage('impulse', node.position[0], node.position[1], node.position[2],
+                                                0, 25, 0,
+                                                xforce, 0.05, 0, 0,
+                                                v[0]*15*2, 0, v[2]*15*2)
 
                 # Also apply opposite to ourself for the first punch only.
                 # This is given as a constant force so that it is more

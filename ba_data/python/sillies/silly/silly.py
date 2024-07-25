@@ -8,6 +8,7 @@ from __future__ import annotations
 import random
 import logging
 import math
+import sillies.lib as lib
 from typing import TYPE_CHECKING, override
 
 import bascenev1 as bs
@@ -177,6 +178,11 @@ class Silly(bs.Actor):
             bs.timer(1.0, bs.Call(_safesetattr, self.node, 'invincible', False))
 
         self.touching_ground = True
+        self._last_axis = {
+            'x':0,
+            'y':0,
+        }
+
         self.hitpoints = self.default_hitpoints
         self.hitpoints_max = self.default_hitpoints
         self.shield_hitpoints: int | None = None
@@ -202,7 +208,7 @@ class Silly(bs.Actor):
         else:
             self._punch_cooldown = factory.punch_cooldown
         self._jump_cooldown = 1500
-        self._pickup_cooldown = 0
+        self._pickup_cooldown = 1000
         self._bomb_cooldown = 0
         self._has_boxing_gloves = False
         if self.default_boxing_gloves:
@@ -423,7 +429,7 @@ class Silly(bs.Actor):
         ): return
         self.last_jump_time_ms = t_ms
 
-        if self.touching_ground == True:
+        if self.touching_ground:
             self.jump()
             self.last_jump_time_ms = None
         else:
@@ -489,9 +495,9 @@ class Silly(bs.Actor):
         t_ms = int(bs.time() * 1000.0)
         assert isinstance(t_ms, int)
         if t_ms - self.last_pickup_time_ms >= self._pickup_cooldown:
-            self.node.pickup_pressed = True
             self.last_pickup_time_ms = t_ms
-        self._turbo_filter_add_press('pickup')
+            if self.touching_ground:
+                self.dodge()
 
     def on_pickup_release(self) -> None:
         """
@@ -501,6 +507,50 @@ class Silly(bs.Actor):
         if not self.node:
             return
         self.node.pickup_pressed = False
+
+    def dodge(self) -> None:
+        xforce = -30
+        yforce = 6
+        speed_iterations = 10
+
+        self.on_move_left_right(self._last_axis['x'])
+        self.on_move_up_down(self._last_axis['y'])
+
+        dir = self.get_direction_facing()
+        for x in range(15):
+            # Up
+            self.node.handlemessage('impulse', self.node.position[0], self.node.position[1], self.node.position[2],
+                                    0, 25, 0,
+                                    yforce, 0.05, 0, 0,
+                                    0, 20*400, 0)
+
+            # Dash
+            self.node.handlemessage('impulse', self.node.position[0], self.node.position[1], self.node.position[2],
+                                    0, 25, 0,
+                                    xforce, 0.05, 0, 0,
+                                    dir[0], 0, dir[2])
+        self.velocity_compensation(30)
+
+        # Play sound
+        #HeroFactory.get().thug_dodge_sound.play(position=self.node.position, volume=1)
+
+        # Emit
+        bs.emitfx(position=self.node.position,
+                  velocity=[v*1 for v in self.node.velocity],
+                  count=3,
+                  scale=1,
+                  spread=0.5,
+                  chunk_type='spark')
+
+    def velocity_compensation(self, original_force) -> None:
+        vel = bs.Vec3(lib.rotate_direction_vector(self.node.velocity, 180))
+        vel_norm = vel.normalized()
+        length = vel.length()
+        for x in range(15):
+            self.node.handlemessage('impulse', self.node.position[0], self.node.position[1], self.node.position[2],
+                                    0, 0, 0,
+                                    original_force * length, 0, 0, 0,
+                                    vel_norm[0], 0, vel_norm[2])
 
     def on_hold_position_press(self) -> None:
         """
@@ -652,6 +702,7 @@ class Silly(bs.Actor):
         if not self.node:
             return
         self.node.move_up_down = value
+        self._last_axis['y'] = value
 
     def on_move_left_right(self, value: float) -> None:
         """
@@ -663,6 +714,7 @@ class Silly(bs.Actor):
         if not self.node:
             return
         self.node.move_left_right = value
+        self._last_axis['x'] = value
 
     def on_punched(self, damage: int) -> None:
         """Called when this Silly gets punched."""
@@ -1437,6 +1489,9 @@ class Silly(bs.Actor):
         pos = self.node.position_forward
         vel = self.node.velocity
 
+        # Yay :3
+        self.node.handlemessage(bs.CelebrateMessage(0.25))
+
         if self.land_mine_count > 0:
             dropping_bomb = False
             self.set_land_mine_count(self.land_mine_count - 1)
@@ -1460,10 +1515,25 @@ class Silly(bs.Actor):
             bomb.node.add_death_action(
                 bs.WeakCall(self.handlemessage, BombDiedMessage())
             )
-        self._pick_up(bomb.node)
 
         for clb in self._dropped_bomb_callbacks:
             clb(self, bomb)
+
+        xforce = 3
+        yforce = 5
+
+        dir = self.get_direction_facing()
+
+        for x in range(15):
+            bomb.node.handlemessage('impulse', self.node.position[0], self.node.position[1], self.node.position[2],
+                                    0, 25, 0,
+                                    yforce, 0.05, 0, 0,
+                                    0, 20*400, 0)
+
+            bomb.node.handlemessage('impulse', self.node.position[0], self.node.position[1], self.node.position[2],
+                                    0, 25, 0,
+                                    xforce, 0.05, 0, 0,
+                                    dir[0], 0, dir[2])
 
         return bomb
 
@@ -1558,25 +1628,27 @@ class Silly(bs.Actor):
     def _hit_self(self, intensity: float) -> None:
         if not self.node:
             return
-        pos = self.node.position
-        self.handlemessage(
-            bs.HitMessage(
-                flat_damage=50.0 * intensity,
-                pos=pos,
-                force_direction=self.node.velocity,
-                hit_type='impact',
+
+        if self.node.knockout > 0.0:
+            pos = self.node.position
+            self.handlemessage(
+                bs.HitMessage(
+                    flat_damage=50.0 * intensity,
+                    pos=pos,
+                    force_direction=self.node.velocity,
+                    hit_type='impact',
+                )
             )
-        )
-        self.node.handlemessage('knockout', max(0.0, 50.0 * intensity))
-        sounds: Sequence[bs.Sound]
-        if intensity >= 5.0:
-            sounds = SillyFactory.get().impact_sounds_harder
-        elif intensity >= 3.0:
-            sounds = SillyFactory.get().impact_sounds_hard
-        else:
-            sounds = SillyFactory.get().impact_sounds_medium
-        sound = sounds[random.randrange(len(sounds))]
-        sound.play(position=pos, volume=5.0)
+            self.node.handlemessage('knockout', max(0.0, 50.0 * intensity))
+            sounds: Sequence[bs.Sound]
+            if intensity >= 5.0:
+                sounds = SillyFactory.get().impact_sounds_harder
+            elif intensity >= 3.0:
+                sounds = SillyFactory.get().impact_sounds_hard
+            else:
+                sounds = SillyFactory.get().impact_sounds_medium
+            sound = sounds[random.randrange(len(sounds))]
+            sound.play(position=pos, volume=5.0)
 
     def _get_bomb_type_tex(self) -> bs.Texture:
         factory = PowerupBoxFactory.get()

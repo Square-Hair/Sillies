@@ -872,7 +872,7 @@ class Bomb(bs.Actor):
             )
 
         else:
-            fuse_time = 3.0
+            fuse_time = 1.0
             if self.bomb_type == 'sticky':
                 sticky = True
                 mesh = factory.sticky_bomb_mesh

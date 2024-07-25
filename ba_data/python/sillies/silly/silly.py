@@ -26,14 +26,14 @@ POWERUP_WEAR_OFF_TIME = 20000
 
 
 BASE_HEALTH = 1500
-BASE_PUNCH_POWER_SCALE = 1
+BASE_PUNCH_POWER_SCALE = 0.85
 
 JUMP_TIME = 1
-DODGE_TIME = 0.7
+LIL_DASH_TIME = 0.7
 
 PUNCH_COOLDOWN = 400
 BOMB_COOLDOWN = 1000
-DODGE_COOLDOWN = 1000
+LIL_DASH_COOLDOWN = 1000
 JUMP_COOLDOWN = 1500
 
 class SillyState(Enum):
@@ -44,7 +44,7 @@ class SillyState(Enum):
 
     ACTIONABLE  = 'Actionable'
     JUMPING     = 'Jumping'
-    DODGING     = 'Dodging'
+    DASHING     = 'Dodging'
 
 
 class PickupMessage:
@@ -228,7 +228,7 @@ class Silly(bs.Actor):
             self._punch_cooldown = factory.punch_cooldown
         self._jump_cooldown = JUMP_COOLDOWN
         self._pickup_cooldown = BOMB_COOLDOWN
-        self._bomb_cooldown = DODGE_COOLDOWN
+        self._bomb_cooldown = LIL_DASH_COOLDOWN
         self._has_boxing_gloves = False
         if self.default_boxing_gloves:
             self.equip_boxing_gloves()
@@ -255,6 +255,36 @@ class Silly(bs.Actor):
         self.punch_callback: Callable[[Silly], Any] | None = None
         self.pick_up_powerup_callback: Callable[[Silly], Any] | None = None
 
+        # Button hold dict
+        self._hold_memory: dict = {
+            'punch': {
+                'pressed': False,
+                'last': -9999,
+                'cd': [self._punch_cooldown],
+                'call': [self.on_punch_press],
+            },
+            'grab': {
+                'pressed': False,
+                'last': -9999,
+                'cd': [self._pickup_cooldown],
+                'call': [self.on_pickup_press],
+            },
+            'bomb': {
+                'pressed': False,
+                'last': -9999,
+                'cd': [self._bomb_cooldown],
+                'call': [self.on_bomb_press],
+            },
+            'jump': {
+                'pressed': False,
+                'last': -9999,
+                'cd': [self._jump_cooldown],
+                'call': [self.on_jump_press],
+            }
+        }
+
+        self._attack_clock = bs.Timer(1/200, self._clock_func, repeat=True)
+
     @override
     def exists(self) -> bool:
         return bool(self.node)
@@ -266,8 +296,8 @@ class Silly(bs.Actor):
                 return
             case SillyState.JUMPING:
                 time = JUMP_TIME
-            case SillyState.DODGING:
-                time = DODGE_TIME
+            case SillyState.DASHING:
+                time = LIL_DASH_TIME
 
         self._state = state
         self._state_timer = bs.Timer(time, self._state_timer_timeout)
@@ -406,6 +436,8 @@ class Silly(bs.Actor):
         if not self.node:
             return
 
+        self._hold_memory['jump']['pressed'] = True
+
         t_ms = int(bs.time() * 1000.0)
         if (
             not self.last_jump_time_ms is None and
@@ -430,7 +462,9 @@ class Silly(bs.Actor):
         """
         if not self.node:
             return
-        self.node.jump_pressed = False
+
+        self._hold_memory['jump']['pressed'] = False
+        return True
 
     def jump(self):
         ''' Jump! '''
@@ -455,6 +489,9 @@ class Silly(bs.Actor):
         ''' Dashes forward if mid-air'''
         if not self.node or self.frozen or self.node.knockout > 0.0:
             return
+
+        SillyFactory.get().air_dash_sound.play(position=self.node.position, volume=1.0)
+
         xforce = 25
         yforce = 1
 
@@ -477,11 +514,15 @@ class Silly(bs.Actor):
         """
         if not self.node:
             return
+
+        self._hold_memory['grab']['pressed'] = True
+
         t_ms = int(bs.time() * 1000.0)
         assert isinstance(t_ms, int)
         if t_ms - self.last_pickup_time_ms >= self._pickup_cooldown:
             self.last_pickup_time_ms = t_ms
             self.drop_bomb()
+        return True
 
     def on_pickup_release(self) -> None:
         """
@@ -490,7 +531,8 @@ class Silly(bs.Actor):
         """
         if not self.node:
             return
-        self.node.pickup_pressed = False
+        self._hold_memory['grab']['pressed'] = False
+        return True
 
     def on_hold_position_press(self) -> None:
         """
@@ -510,6 +552,21 @@ class Silly(bs.Actor):
             return
         self.node.hold_position_pressed = False
 
+    def _clock_func(self):
+        ''' For all hold-to-things! '''
+        if not self.node or not self.is_alive():
+            self._attack_clock = None
+            return
+
+        t = self.t_ms = int(bs.time() * 1000.0)
+        for button, status in self._hold_memory.items():
+            if (
+                status['pressed'] and
+                t - status['last'] >= status['cd'][0]
+            ):
+                self._hold_memory[button]['last'] = t
+                self._hold_memory[button]['call'][0]()
+
     def on_punch_press(self) -> None:
         """
         Called to 'press punch' on this Silly;
@@ -517,6 +574,9 @@ class Silly(bs.Actor):
         """
         if not self.node or self.frozen or self.node.knockout > 0.0:
             return
+
+        self._hold_memory['punch']['pressed'] = True
+
         t_ms = int(bs.time() * 1000.0)
         assert isinstance(t_ms, int)
         if t_ms - self.last_punch_time_ms >= self._punch_cooldown:
@@ -525,6 +585,7 @@ class Silly(bs.Actor):
             self._punched_nodes = set()  # Reset this.
             self.last_punch_time_ms = t_ms
             self.node.punch_pressed = True
+            self.node.punch_pressed = False
             if not self.node.hold_node:
                 bs.timer(
                     0.1,
@@ -534,6 +595,7 @@ class Silly(bs.Actor):
                         0.8,
                     ),
                 )
+        return True
 
     def _safe_play_sound(self, sound: bs.Sound, volume: float) -> None:
         """Plays a sound at our position if we exist."""
@@ -547,7 +609,8 @@ class Silly(bs.Actor):
         """
         if not self.node:
             return
-        self.node.punch_pressed = False
+        self._hold_memory['punch']['pressed'] = False
+        return True
 
     def on_bomb_press(self) -> None:
         """
@@ -561,14 +624,19 @@ class Silly(bs.Actor):
             or self.node.knockout > 0.0
         ):
             return
+
+        self._hold_memory['bomb']['pressed'] = True
+
         t_ms = int(bs.time() * 1000.0)
         assert isinstance(t_ms, int)
         if t_ms - self.last_bomb_time_ms >= self._bomb_cooldown:
             self.last_bomb_time_ms = t_ms
             self.node.bomb_pressed = True
+            self.node.bomb_pressed = False
             if self.touching_ground:
-                self.dodge()
-                self._set_state(SillyState.DODGING)
+                self.lil_dash()
+                self._set_state(SillyState.DASHING)
+        return True
 
     def on_bomb_release(self) -> None:
         """
@@ -577,12 +645,14 @@ class Silly(bs.Actor):
         """
         if not self.node:
             return
-        self.node.bomb_pressed = False
+        self._hold_memory['bomb']['pressed'] = False
+        return True
 
-    def dodge(self) -> None:
-        xforce = -30
+    def lil_dash(self) -> None:
+
+        SillyFactory.get().dash_sound.play(position=self.node.position, volume=1.0)
+        xforce = 30
         yforce = 6
-        speed_iterations = 10
 
         self.on_move_left_right(self._last_axis['x'])
         self.on_move_up_down(self._last_axis['y'])
@@ -600,10 +670,10 @@ class Silly(bs.Actor):
                                     0, 25, 0,
                                     xforce, 0.05, 0, 0,
                                     dir[0], 0, dir[2])
-        self.velocity_compensation(30)
+        self.velocity_compensation(-30)
 
         # Play sound
-        #HeroFactory.get().thug_dodge_sound.play(position=self.node.position, volume=1)
+        #HeroFactory.get().thug_lil_dash_sound.play(position=self.node.position, volume=1)
 
         # Emit
         bs.emitfx(position=self.node.position,
@@ -1391,7 +1461,9 @@ class Silly(bs.Actor):
                     )
                 )
                 if node.getnodetype() == 'spaz':
+                    # Uppercut
                     if self._state == SillyState.JUMPING:
+                        SillyFactory.get().uppercut_sound.play(position=self.node.position, volume=1.0)
                         xforce = 4
                         yforce = 35
 
@@ -1406,8 +1478,8 @@ class Silly(bs.Actor):
                                                     0, 25, 0,
                                                     xforce, 0.05, 0, 0,
                                                     v[0]*15*2, 0, v[2]*15*2)
-
-                    if self._state == SillyState.DODGING:
+                    # Dodge hit
+                    if self._state == SillyState.DASHING:
                         xforce = 30
                         yforce = 4
 

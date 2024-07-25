@@ -26,14 +26,8 @@ class CreditsListWindow(bui.Window):
 
         # if they provided an origin-widget, scale up from that
         scale_origin: tuple[float, float] | None
-        if origin_widget is not None:
-            self._transition_out = 'out_scale'
-            scale_origin = origin_widget.get_screen_space_center()
-            transition = 'in_scale'
-        else:
-            self._transition_out = 'out_right'
-            scale_origin = None
-            transition = 'in_right'
+        self._transition_out = 'out_right'
+        transition = 'in_right'
 
         assert bui.app.classic is not None
         uiscale = bui.app.ui_v1.uiscale
@@ -47,15 +41,16 @@ class CreditsListWindow(bui.Window):
                 size=(width, height),
                 transition=transition,
                 toolbar_visibility='menu_minimal',
-                scale_origin_stack_offset=scale_origin,
                 scale=(
                     2.0
                     if uiscale is bui.UIScale.SMALL
-                    else 1.3 if uiscale is bui.UIScale.MEDIUM else 1.0
+                    else 1.3
+                    if uiscale is bui.UIScale.MEDIUM
+                    else 1.0
                 ),
-                stack_offset=(
-                    (0, -8) if uiscale is bui.UIScale.SMALL else (0, 0)
-                ),
+                stack_offset=(0, -8)
+                if uiscale is bui.UIScale.SMALL
+                else (0, 0),
             )
         )
 
@@ -207,126 +202,24 @@ class CreditsListWindow(bui.Window):
         names.sort(key=lambda x: x.lower())
         freesound_names = _format_names(names, 90)
 
-        try:
-            with open(
-                os.path.join(
-                    bui.app.env.data_directory,
-                    'ba_data',
-                    'data',
-                    'langdata.json',
-                ),
-                encoding='utf-8',
-            ) as infile:
-                translation_contributors = json.loads(infile.read())[
-                    'translation_contributors'
-                ]
-        except Exception:
-            logging.exception('Error reading translation contributors.')
-            translation_contributors = []
-
-        translation_names = _format_names(translation_contributors, 60)
-
         # Need to bake this out and chop it up since we're passing our
         # 65535 vertex limit for meshes..
         # We can remove that limit once we drop support for GL ES2.. :-/
         # (or add mesh splitting under the hood)
-        credits_text = (
-            '  '
-            + bui.Lstr(resource=self._r + '.codingGraphicsAudioText')
-            .evaluate()
-            .replace('${NAME}', 'Eric Froemling')
-            + '\n'
-            '\n'
-            '  '
-            + bui.Lstr(resource=self._r + '.additionalAudioArtIdeasText')
-            .evaluate()
-            .replace('${NAME}', 'Raphael Suter')
-            + '\n'
-            '\n'
-            '  '
-            + bui.Lstr(resource=self._r + '.soundAndMusicText').evaluate()
-            + '\n'
-            '\n' + sound_and_music + '\n'
-            '\n'
-            '     '
-            + bui.Lstr(resource=self._r + '.publicDomainMusicViaText')
-            .evaluate()
-            .replace('${NAME}', 'Musopen.com')
-            + '\n'
-            '        '
-            + bui.Lstr(resource=self._r + '.thanksEspeciallyToText')
-            .evaluate()
-            .replace('${NAME}', 'the US Army, Navy, and Marine Bands')
-            + '\n'
-            '\n'
-            '     '
-            + bui.Lstr(resource=self._r + '.additionalMusicFromText')
-            .evaluate()
-            .replace('${NAME}', 'The YouTube Audio Library')
-            + '\n'
-            '\n'
-            '     '
-            + bui.Lstr(resource=self._r + '.soundsText')
-            .evaluate()
-            .replace('${SOURCE}', 'Freesound.org')
-            + '\n'
-            '\n' + freesound_names + '\n'
-            '\n'
-            '  '
-            + bui.Lstr(
-                resource=self._r + '.languageTranslationsText'
-            ).evaluate()
-            + '\n'
-            '\n'
-            + '\n'.join(translation_names.splitlines()[:146])
-            + '\n'.join(translation_names.splitlines()[146:])
-            + '\n'
-            '\n'
-            '  Shout Out to Awesome Mods / Modders / Contributors:\n\n'
-            '     BombDash ModPack\n'
-            '     TheMikirog & SoK - BombSquad Joyride Modpack\n'
-            '     Mrmaxmeier - BombSquad-Community-Mod-Manager\n'
-            '     Ritiek Malhotra \n'
-            '     Dliwk\n'
-            '     vishal332008\n'
-            '     itsre3\n'
-            '     Drooopyyy\n'
-            '\n'
-            '  Holiday theme vector art designed by Freepik\n'
-            '\n'
-            '  '
-            + bui.Lstr(resource=self._r + '.specialThanksText').evaluate()
-            + '\n'
-            '\n'
-            '     Todd, Laura, and Robert Froemling\n'
-            '     '
-            + bui.Lstr(resource=self._r + '.allMyFamilyText')
-            .evaluate()
-            .replace('\n', '\n     ')
-            + '\n'
-            '     '
-            + bui.Lstr(
-                resource=self._r + '.whoeverInventedCoffeeText'
-            ).evaluate()
-            + '\n'
-            '\n'
-            '  ' + bui.Lstr(resource=self._r + '.legalText').evaluate() + '\n'
-            '\n'
-            '     '
-            + bui.Lstr(resource=self._r + '.softwareBasedOnText')
-            .evaluate()
-            .replace('${NAME}', 'the Khronos Group')
-            + '\n'
-            '\n'
-            '                                       '
-            '                      www.ballistica.net\n'
-        )
 
-        txt = credits_text
+        # What does the comment above me mean lmao
+        txt = ('Square Hair Team:\n'
+               'SoK - Lead Manager, Lead Developer\n'
+               'Temp - Second Developer\n'
+               'TheMikirog - Third Developer\n'
+               'Nęo - Fourth Developer\n'
+               '\n'
+               'Special Credits:\n'
+               'Artninja - Punch Sound Effects')
         lines = txt.splitlines()
         line_height = 20
 
-        scale = 0.55
+        scale = 0.7
         self._sub_width = width - 80
         self._sub_height = line_height * len(lines) + 40
 
@@ -356,10 +249,6 @@ class CreditsListWindow(bui.Window):
 
     def _back(self) -> None:
         from bauiv1lib.mainmenu import MainMenuWindow
-
-        # no-op if our underlying widget is dead or on its way out.
-        if not self._root_widget or self._root_widget.transitioning_out:
-            return
 
         bui.containerwidget(
             edit=self._root_widget, transition=self._transition_out

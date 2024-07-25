@@ -124,12 +124,14 @@ class SillyFactory:
             bs.getsound('impactGiant6'),
         )
         self.single_player_death_sound = bs.getsound('playerDeath')
+
         self.punch_sound_weak = bs.getsound('punchWeak01')
-        self.punch_sound = bs.getsound('punch01')
+        self.punch_sound = bs.getsound('punchStrong01')
         self.punch_sound_strong = (
             bs.getsound('punchStrong01'),
             bs.getsound('punchStrong02'),
         )
+        self.uppercut_sound = bs.getsound('uppercut')
 
         self.splatter_sounds = (
             bs.getsound('splatter'),
@@ -139,6 +141,9 @@ class SillyFactory:
             bs.getsound('splatter5'),
             bs.getsound('splatter6'),
         )
+
+        self.dash_sound = bs.getsound('dash')
+        self.air_dash_sound = bs.getsound('airDash')
 
         self.splatter_extreme_sound = bs.getsound('splatterExtreme')
 

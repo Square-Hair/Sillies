@@ -25,11 +25,16 @@ if TYPE_CHECKING:
 POWERUP_WEAR_OFF_TIME = 20000
 
 
-BASE_PUNCH_POWER_SCALE = 1.2
-BASE_PUNCH_COOLDOWN = 400
+BASE_HEALTH = 1500
+BASE_PUNCH_POWER_SCALE = 1
 
 JUMP_TIME = 1
-DODGE_TIME = 1
+DODGE_TIME = 0.7
+
+PUNCH_COOLDOWN = 400
+BOMB_COOLDOWN = 1000
+DODGE_COOLDOWN = 1000
+JUMP_COOLDOWN = 1500
 
 class SillyState(Enum):
     """Silly's current state.
@@ -81,7 +86,7 @@ class Silly(bs.Actor):
     default_bomb_type = 'normal'
     default_boxing_gloves = False
     default_shields = False
-    default_hitpoints = 1000
+    default_hitpoints = BASE_HEALTH
 
     def __init__(
         self,
@@ -218,12 +223,12 @@ class Silly(bs.Actor):
         self.blast_radius = 2.0
         self.powerups_expire = powerups_expire
         if self._demo_mode:  # Preserve old behavior.
-            self._punch_cooldown = BASE_PUNCH_COOLDOWN
+            self._punch_cooldown = PUNCH_COOLDOWN
         else:
             self._punch_cooldown = factory.punch_cooldown
-        self._jump_cooldown = 1500
-        self._pickup_cooldown = 1000
-        self._bomb_cooldown = 0
+        self._jump_cooldown = JUMP_COOLDOWN
+        self._pickup_cooldown = BOMB_COOLDOWN
+        self._bomb_cooldown = DODGE_COOLDOWN
         self._has_boxing_gloves = False
         if self.default_boxing_gloves:
             self.equip_boxing_gloves()
@@ -1385,38 +1390,38 @@ class Silly(bs.Actor):
                         ),
                     )
                 )
+                if node.getnodetype() == 'spaz':
+                    if self._state == SillyState.JUMPING:
+                        xforce = 4
+                        yforce = 35
 
-                if self._state == SillyState.JUMPING:
-                    xforce = 4
-                    yforce = 35
+                        for x in range(10):
+                            v = self.node.velocity
+                            node.handlemessage('impulse', node.position[0], node.position[1], node.position[2],
+                                                    0, 25, 0,
+                                                    yforce, 0.05, 0, 0,
+                                                    0, 20*400, 0)
 
-                    for x in range(10):
-                        v = node.velocity
-                        node.handlemessage('impulse', node.position[0], node.position[1], node.position[2],
-                                                0, 25, 0,
-                                                yforce, 0.05, 0, 0,
-                                                0, 20*400, 0)
+                            node.handlemessage('impulse', node.position[0], node.position[1], node.position[2],
+                                                    0, 25, 0,
+                                                    xforce, 0.05, 0, 0,
+                                                    v[0]*15*2, 0, v[2]*15*2)
 
-                        node.handlemessage('impulse', node.position[0], node.position[1], node.position[2],
-                                                0, 25, 0,
-                                                xforce, 0.05, 0, 0,
-                                                v[0]*15*2, 0, v[2]*15*2)
+                    if self._state == SillyState.DODGING:
+                        xforce = 30
+                        yforce = 4
 
-                if self._state == SillyState.DODGING:
-                    xforce = 30
-                    yforce = 4
+                        for x in range(10):
+                            v = self.node.velocity
+                            node.handlemessage('impulse', node.position[0], node.position[1], node.position[2],
+                                                    0, 25, 0,
+                                                    yforce, 0.05, 0, 0,
+                                                    0, 20*400, 0)
 
-                    for x in range(10):
-                        v = node.velocity
-                        node.handlemessage('impulse', node.position[0], node.position[1], node.position[2],
-                                                0, 25, 0,
-                                                yforce, 0.05, 0, 0,
-                                                0, 20*400, 0)
-
-                        node.handlemessage('impulse', node.position[0], node.position[1], node.position[2],
-                                                0, 25, 0,
-                                                xforce, 0.05, 0, 0,
-                                                v[0]*15*2, 0, v[2]*15*2)
+                            node.handlemessage('impulse', node.position[0], node.position[1], node.position[2],
+                                                    0, 25, 0,
+                                                    xforce, 0.05, 0, 0,
+                                                    v[0]*15*2, 0, v[2]*15*2)
 
                 # Also apply opposite to ourself for the first punch only.
                 # This is given as a constant force so that it is more
@@ -1650,7 +1655,7 @@ class Silly(bs.Actor):
     def _gloves_wear_off(self) -> None:
         if self._demo_mode:  # Preserve old behavior.
             self._punch_power_scale = 1.2
-            self._punch_cooldown = BASE_PUNCH_COOLDOWN
+            self._punch_cooldown = PUNCH_COOLDOWN
         else:
             factory = SillyFactory.get()
             self._punch_power_scale = factory.punch_power_scale

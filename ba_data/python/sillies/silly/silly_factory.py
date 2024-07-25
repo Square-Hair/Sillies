@@ -132,6 +132,7 @@ class SillyFactory:
             bs.getsound('punchStrong02'),
         )
         self.uppercut_sound = bs.getsound('uppercut')
+        self.dash_hit_sound = bs.getsound('dashHit')
 
         self.splatter_sounds = (
             bs.getsound('splatter'),
@@ -189,7 +190,7 @@ class SillyFactory:
             conditions=('they_are_different_node_than_us',),
             actions=(
                 ('modify_part_collision', 'collide', True),
-                ('modify_part_collision', 'physical', False),
+                ('modify_part_collision', 'physical', True),
                 ('message', 'our_node', 'at_connect', PunchHitMessage()),
             ),
         )

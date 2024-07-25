@@ -26,10 +26,18 @@ POWERUP_WEAR_OFF_TIME = 20000
 
 
 BASE_HEALTH = 1500
-BASE_PUNCH_POWER_SCALE = 0.85
+BASE_PUNCH_POWER_SCALE = 0.7
+
+GLOVES_PUNCH_POWER_SCALE = 0.85
+GLOVES_PUNCH_COOLDOWN = 300
+
+BASE_IMPACT_SCALE = 1
+SHIELD_IMPACT_SCALE = 0.5
 
 JUMP_TIME = 1
 LIL_DASH_TIME = 0.7
+
+FREEZE_TIME = 2
 
 PUNCH_COOLDOWN = 400
 BOMB_COOLDOWN = 1000
@@ -85,7 +93,7 @@ class Silly(bs.Actor):
     default_bomb_count = 1
     default_bomb_type = 'normal'
     default_boxing_gloves = False
-    default_shields = False
+    default_shields = True
     default_hitpoints = BASE_HEALTH
 
     def __init__(
@@ -194,7 +202,7 @@ class Silly(bs.Actor):
 
             bs.timer(1.0, bs.Call(_safesetattr, self.node, 'invincible', False))
 
-        self.touching_ground = True
+        self.touched_floors = -1
         self._last_axis = {
             'x':0,
             'y':0,
@@ -445,13 +453,16 @@ class Silly(bs.Actor):
         ): return
         self.last_jump_time_ms = t_ms
 
-        if self.touching_ground:
-            self.jump()
-            self._set_state(SillyState.JUMPING)
-            self.last_jump_time_ms = None
-        else:
+        # Jump if we're not in the air.
+        if self.touched_floors < 0:
             self.air_dash()
             self._jump_cooldown = 1500
+            return
+
+
+        self.jump()
+        self._set_state(SillyState.JUMPING)
+        self.last_jump_time_ms = None
 
         return True
 
@@ -470,8 +481,12 @@ class Silly(bs.Actor):
         ''' Jump! '''
         if not self.node or self.frozen or self.node.knockout > 0.0:
             return
+
+        if self.touched_floors < 0:
+            return
+
         xforce = 8
-        yforce = 20
+        yforce = 15
 
         for x in range(15):
             v = self.node.velocity
@@ -492,7 +507,15 @@ class Silly(bs.Actor):
 
         SillyFactory.get().air_dash_sound.play(position=self.node.position, volume=1.0)
 
-        xforce = 25
+        # Emit
+        bs.emitfx(position=self.node.position,
+                  velocity=[v*1 for v in self.node.velocity],
+                  count=3,
+                  scale=1,
+                  spread=0.5,
+                  chunk_type='spark')
+
+        xforce = 15
         yforce = 1
 
         v = self.get_direction_velocity()
@@ -595,6 +618,14 @@ class Silly(bs.Actor):
                         0.8,
                     ),
                 )
+            factory = SillyFactory.get()
+            # Add the curse material.
+            for attr in ['materials']:
+                materials = getattr(self.node, attr)
+                if factory.punch_material not in materials:
+                    setattr(
+                        self.node, attr, materials + (factory.punch_material,)
+                    )
         return True
 
     def _safe_play_sound(self, sound: bs.Sound, volume: float) -> None:
@@ -610,6 +641,19 @@ class Silly(bs.Actor):
         if not self.node:
             return
         self._hold_memory['punch']['pressed'] = False
+        factory = SillyFactory.get()
+        for attr in ['materials']:
+            materials = getattr(self.node, attr)
+            if factory.punch_material in materials:
+                setattr(
+                    self.node,
+                    attr,
+                    tuple(
+                        m
+                        for m in materials
+                        if m != factory.punch_material
+                    ),
+                )
         return True
 
     def on_bomb_press(self) -> None:
@@ -622,6 +666,7 @@ class Silly(bs.Actor):
             or self._dead
             or self.frozen
             or self.node.knockout > 0.0
+            or self.touched_floors < 0
         ):
             return
 
@@ -633,9 +678,8 @@ class Silly(bs.Actor):
             self.last_bomb_time_ms = t_ms
             self.node.bomb_pressed = True
             self.node.bomb_pressed = False
-            if self.touching_ground:
-                self.lil_dash()
-                self._set_state(SillyState.DASHING)
+            self.lil_dash()
+            self._set_state(SillyState.DASHING)
         return True
 
     def on_bomb_release(self) -> None:
@@ -671,9 +715,6 @@ class Silly(bs.Actor):
                                     xforce, 0.05, 0, 0,
                                     dir[0], 0, dir[2])
         self.velocity_compensation(-30)
-
-        # Play sound
-        #HeroFactory.get().thug_lil_dash_sound.play(position=self.node.position, volume=1)
 
         # Emit
         bs.emitfx(position=self.node.position,
@@ -814,12 +855,12 @@ class Silly(bs.Actor):
         self.node.boxing_gloves = True
         self._has_boxing_gloves = True
         if self._demo_mode:  # Preserve old behavior.
-            self._punch_power_scale = 1.7
-            self._punch_cooldown = 300
+            self._punch_power_scale = GLOVES_PUNCH_POWER_SCALE
+            self._punch_cooldown = GLOVES_PUNCH_COOLDOWN
         else:
             factory = SillyFactory.get()
-            self._punch_power_scale = factory.punch_power_scale_gloves
-            self._punch_cooldown = factory.punch_cooldown_gloves
+            self._punch_power_scale = GLOVES_PUNCH_POWER_SCALE
+            self._punch_cooldown = GLOVES_PUNCH_COOLDOWN
 
     def equip_shields(self, decay: bool = False) -> None:
         """
@@ -838,6 +879,8 @@ class Silly(bs.Actor):
                 attrs={'color': (0.3, 0.2, 2.0), 'radius': 1.3},
             )
             self.node.connectattr('position_center', self.shield, 'position')
+
+            self.impact_scale = SHIELD_IMPACT_SCALE
         self.shield_hitpoints = self.shield_hitpoints_max = 650
         self.shield_decay_rate = factory.shield_decay_rate if decay else 0
         self.shield.hurt = 0
@@ -865,6 +908,7 @@ class Silly(bs.Actor):
                 self.shield.delete()
                 self.shield = None
                 self.shield_decay_timer = None
+                self.impact_scale = BASE_IMPACT_SCALE
                 assert self.node
                 SillyFactory.get().shield_down_sound.play(
                     1.0,
@@ -1032,6 +1076,7 @@ class Silly(bs.Actor):
                                     if m != factory.curse_material
                                 ),
                             )
+
                     self.node.curse_death_time = 0
                 self.hitpoints = self.hitpoints_max
                 self._flash_billboard(PowerupBoxFactory.get().tex_health)
@@ -1053,12 +1098,10 @@ class Silly(bs.Actor):
                     position=self.node.position,
                 )
                 return None
-            if self.shield:
-                return None
             if not self.frozen:
                 self.frozen = True
                 self.node.frozen = True
-                bs.timer(5.0, bs.WeakCall(self.handlemessage, bs.ThawMessage()))
+                bs.timer(FREEZE_TIME, bs.WeakCall(self.handlemessage, bs.ThawMessage()))
                 # Instantly shatter if we're already dead.
                 # (otherwise its hard to tell we're dead).
                 if self.hitpoints <= 0:
@@ -1098,65 +1141,17 @@ class Silly(bs.Actor):
             if self.shield:
                 if msg.flat_damage:
                     damage = msg.flat_damage * self.impact_scale
-                else:
-                    # Hit our Silly with an impulse but tell it to only return
-                    # theoretical damage; not apply the impulse.
-                    assert msg.force_direction is not None
-                    self.node.handlemessage(
-                        'impulse',
-                        msg.pos[0],
-                        msg.pos[1],
-                        msg.pos[2],
-                        msg.velocity[0],
-                        msg.velocity[1],
-                        msg.velocity[2],
-                        mag,
-                        velocity_mag,
-                        msg.radius,
-                        1,
-                        msg.force_direction[0],
-                        msg.force_direction[1],
-                        msg.force_direction[2],
-                    )
-                    damage = damage_scale * self.node.damage
 
                 assert self.shield_hitpoints is not None
-                self.shield_hitpoints -= int(damage)
-                self.shield.hurt = (
-                    1.0
-                    - float(self.shield_hitpoints) / self.shield_hitpoints_max
-                )
 
                 # Its a cleaner event if a hit just kills the shield
                 # without damaging the player.
                 # However, massive damage events should still be able to
                 # damage the player. This hopefully gives us a happy medium.
-                max_spillover = SillyFactory.get().max_shield_spillover_damage
-                if self.shield_hitpoints <= 0:
-                    # FIXME: Transition out perhaps?
-                    self.shield.delete()
-                    self.shield = None
-                    SillyFactory.get().shield_down_sound.play(
-                        1.0,
-                        position=self.node.position,
-                    )
-
-                    # Emit some cool looking sparks when the shield dies.
-                    npos = self.node.position
-                    bs.emitfx(
-                        position=(npos[0], npos[1] + 0.9, npos[2]),
-                        velocity=self.node.velocity,
-                        count=random.randrange(20, 30),
-                        scale=1.0,
-                        spread=0.6,
-                        chunk_type='spark',
-                    )
-
-                else:
-                    SillyFactory.get().shield_hit_sound.play(
-                        0.5,
-                        position=self.node.position,
-                    )
+                SillyFactory.get().shield_hit_sound.play(
+                    0.5,
+                    position=self.node.position,
+                )
 
                 # Emit some cool looking sparks on shield hit.
                 assert msg.force_direction is not None
@@ -1167,25 +1162,11 @@ class Silly(bs.Actor):
                         msg.force_direction[1] * 1.0,
                         msg.force_direction[2] * 1.0,
                     ),
-                    count=min(30, 5 + int(damage * 0.005)),
+                    count=4,
                     scale=0.5,
                     spread=0.3,
                     chunk_type='spark',
                 )
-
-                # If they passed our spillover threshold,
-                # pass damage along to Silly.
-                if self.shield_hitpoints <= -max_spillover:
-                    leftover_damage = -max_spillover - self.shield_hitpoints
-                    shield_leftover_ratio = leftover_damage / damage
-
-                    # Scale down the magnitudes applied to Silly accordingly.
-                    mag *= shield_leftover_ratio
-                    velocity_mag *= shield_leftover_ratio
-                else:
-                    return True  # Good job shield!
-            else:
-                shield_leftover_ratio = 1.0
 
             if msg.flat_damage:
                 damage = int(
@@ -1369,7 +1350,9 @@ class Silly(bs.Actor):
                     self.node.delete()
             elif self.node:
                 self.node.hurt = 1.0
-                self.shatter(extreme=True)
+                bs.timer(0.1, bs.Call(self.shatter, extreme=True))
+                bs.getactivity().globalsnode.slow_motion = True
+                bs.timer(0.2, lambda: setattr(bs.getactivity().globalsnode, 'slow_motion', False))
                 if self.play_big_death_sound and not wasdead:
                     SillyFactory.get().single_player_death_sound.play()
                 self.node.dead = True
@@ -1380,10 +1363,10 @@ class Silly(bs.Actor):
             self.handlemessage(bs.DieMessage(how=bs.DeathType.FALL))
 
         elif isinstance(msg, bs.FootConnectMessage):
-            self.touching_ground = True
+            self.touched_floors += 1
 
         elif isinstance(msg, bs.FootDisconnectMessage):
-            self.touching_ground = False
+            self.touched_floors -= 1
 
         elif isinstance(msg, bs.StandMessage):
             self._last_stand_pos = (
@@ -1417,10 +1400,8 @@ class Silly(bs.Actor):
 
             # Only allow one hit per node per punch.
             if node and (node not in self._punched_nodes):
-                punch_momentum_angular = (
-                    self.node.punch_momentum_angular * self._punch_power_scale
-                )
-                punch_power = self.node.punch_power * self._punch_power_scale
+                punch_momentum_angular = 0.75 * self._punch_power_scale
+                punch_power = 0.75 * self._punch_power_scale
 
                 # Ok here's the deal:  we pass along our base velocity for use
                 # in the impulse damage calculations since that is a more
@@ -1437,21 +1418,17 @@ class Silly(bs.Actor):
                     sound = sounds[random.randrange(len(sounds))]
                     sound.play(1.0, position=self.node.position)
 
-                ppos = self.node.punch_position
-                punchdir = self.node.punch_velocity
-                vel = self.node.punch_momentum_linear
-
                 self._punched_nodes.add(node)
                 node.handlemessage(
                     bs.HitMessage(
-                        pos=ppos,
-                        velocity=vel,
+                        pos=self.node.position,
+                        velocity=self.node.velocity,
                         magnitude=punch_power * punch_momentum_angular * 110.0,
                         velocity_magnitude=punch_power * 40,
                         radius=0,
                         srcnode=self.node,
                         source_player=self.source_player,
-                        force_direction=punchdir,
+                        force_direction=self.node.velocity,
                         hit_type='punch',
                         hit_subtype=(
                             'super_punch'
@@ -1463,7 +1440,17 @@ class Silly(bs.Actor):
                 if node.getnodetype() == 'spaz':
                     # Uppercut
                     if self._state == SillyState.JUMPING:
+                        # Yay :3
+                        self.node.handlemessage(bs.CelebrateMessage(0.45))
+                        # Play sound
                         SillyFactory.get().uppercut_sound.play(position=self.node.position, volume=1.0)
+                        # Emit
+                        bs.emitfx(position=self.node.position,
+                                  velocity=[v*1 for v in self.node.velocity],
+                                  count=3,
+                                  scale=1,
+                                  spread=0.5,
+                                  chunk_type='sweat')
                         xforce = 4
                         yforce = 35
 
@@ -1480,6 +1467,15 @@ class Silly(bs.Actor):
                                                     v[0]*15*2, 0, v[2]*15*2)
                     # Dodge hit
                     if self._state == SillyState.DASHING:
+                        # Play sound
+                        SillyFactory.get().dash_hit_sound.play(position=self.node.position, volume=1.0)
+                        # Emit
+                        bs.emitfx(position=self.node.position,
+                                  velocity=[v*1 for v in self.node.velocity],
+                                  count=3,
+                                  scale=1,
+                                  spread=0.5,
+                                  chunk_type='sweat')
                         xforce = 30
                         yforce = 4
 
@@ -1503,17 +1499,17 @@ class Silly(bs.Actor):
                 mag = -400.0
                 if self._hockey:
                     mag *= 0.5
-                if len(self._punched_nodes) == 1:
-                    self.node.handlemessage(
-                        'kick_back',
-                        ppos[0],
-                        ppos[1],
-                        ppos[2],
-                        punchdir[0],
-                        punchdir[1],
-                        punchdir[2],
-                        mag,
-                    )
+                #if len(self._punched_nodes) == 1:
+                #    self.node.handlemessage(
+                #        'kick_back',
+                #        ppos[0],
+                #        ppos[1],
+                #        ppos[2],
+                #        punchdir[0],
+                #        punchdir[1],
+                #        punchdir[2],
+                #        mag,
+                #    )
 
     def drop_bomb(self) -> Bomb | None:
         """
@@ -1530,7 +1526,7 @@ class Silly(bs.Actor):
         vel = self.node.velocity
 
         # Yay :3
-        self.node.handlemessage(bs.CelebrateMessage(0.25))
+        self.node.handlemessage(bs.CelebrateMessage(0.45))
 
         if self.land_mine_count > 0:
             dropping_bomb = False
@@ -1726,12 +1722,12 @@ class Silly(bs.Actor):
 
     def _gloves_wear_off(self) -> None:
         if self._demo_mode:  # Preserve old behavior.
-            self._punch_power_scale = 1.2
+            self._punch_power_scale = BASE_PUNCH_POWER_SCALE
             self._punch_cooldown = PUNCH_COOLDOWN
         else:
             factory = SillyFactory.get()
-            self._punch_power_scale = factory.punch_power_scale
-            self._punch_cooldown = factory.punch_cooldown
+            self._punch_power_scale = BASE_PUNCH_POWER_SCALE
+            self._punch_cooldown = PUNCH_COOLDOWN
         self._has_boxing_gloves = False
         if self.node:
             PowerupBoxFactory.get().powerdown_sound.play(

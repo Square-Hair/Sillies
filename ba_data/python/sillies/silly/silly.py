@@ -24,10 +24,12 @@ if TYPE_CHECKING:
 
 POWERUP_WEAR_OFF_TIME = 20000
 
-# Obsolete - just used for demo guy now.
+
 BASE_PUNCH_POWER_SCALE = 1.2
 BASE_PUNCH_COOLDOWN = 400
+
 JUMP_TIME = 1
+DODGE_TIME = 1
 
 class SillyState(Enum):
     """Silly's current state.
@@ -37,6 +39,7 @@ class SillyState(Enum):
 
     ACTIONABLE  = 'Actionable'
     JUMPING     = 'Jumping'
+    DODGING     = 'Dodging'
 
 
 class PickupMessage:
@@ -258,6 +261,8 @@ class Silly(bs.Actor):
                 return
             case SillyState.JUMPING:
                 time = JUMP_TIME
+            case SillyState.DODGING:
+                time = DODGE_TIME
 
         self._state = state
         self._state_timer = bs.Timer(time, self._state_timer_timeout)
@@ -558,6 +563,7 @@ class Silly(bs.Actor):
             self.node.bomb_pressed = True
             if self.touching_ground:
                 self.dodge()
+                self._set_state(SillyState.DODGING)
 
     def on_bomb_release(self) -> None:
         """
@@ -1327,6 +1333,9 @@ class Silly(bs.Actor):
                 return None
             node = bs.getcollision().opposingnode
 
+            if not node:
+                return None
+
             # Don't want to physically affect powerups.
             if node.getdelegate(PowerupBox):
                 return None
@@ -1376,9 +1385,26 @@ class Silly(bs.Actor):
                         ),
                     )
                 )
+
                 if self._state == SillyState.JUMPING:
                     xforce = 4
                     yforce = 35
+
+                    for x in range(10):
+                        v = node.velocity
+                        node.handlemessage('impulse', node.position[0], node.position[1], node.position[2],
+                                                0, 25, 0,
+                                                yforce, 0.05, 0, 0,
+                                                0, 20*400, 0)
+
+                        node.handlemessage('impulse', node.position[0], node.position[1], node.position[2],
+                                                0, 25, 0,
+                                                xforce, 0.05, 0, 0,
+                                                v[0]*15*2, 0, v[2]*15*2)
+
+                if self._state == SillyState.DODGING:
+                    xforce = 30
+                    yforce = 4
 
                     for x in range(10):
                         v = node.velocity

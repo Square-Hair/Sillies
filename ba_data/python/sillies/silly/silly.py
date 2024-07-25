@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import random
 import logging
+import math
 from typing import TYPE_CHECKING, override
 
 import bascenev1 as bs
@@ -174,6 +175,8 @@ class Silly(bs.Actor):
                     setattr(node, attr, val)
 
             bs.timer(1.0, bs.Call(_safesetattr, self.node, 'invincible', False))
+
+        self.touching_ground = True
         self.hitpoints = self.default_hitpoints
         self.hitpoints_max = self.default_hitpoints
         self.shield_hitpoints: int | None = None
@@ -198,7 +201,7 @@ class Silly(bs.Actor):
             self._punch_cooldown = BASE_PUNCH_COOLDOWN
         else:
             self._punch_cooldown = factory.punch_cooldown
-        self._jump_cooldown = 250
+        self._jump_cooldown = 1500
         self._pickup_cooldown = 0
         self._bomb_cooldown = 0
         self._has_boxing_gloves = False
@@ -233,6 +236,34 @@ class Silly(bs.Actor):
     @override
     def exists(self) -> bool:
         return bool(self.node)
+
+    def get_direction_facing(self, scale = 1.0):
+        """
+        Get direction vector based on facing direction.
+        """
+        facing_direction = (self.node.position[0] - self.node.position_forward[0],
+                            self.node.position[2] - self.node.position_forward[2])
+        facing_direction_length = math.hypot(facing_direction[0], facing_direction[1])
+        dir = (facing_direction[0] / facing_direction_length * scale,
+               0,
+               facing_direction[1] / facing_direction_length * scale)
+        return dir
+
+    def get_direction_velocity(self, scale = 1.0):
+        """
+        Get direction vector based on velocity.
+        Defaults to facing direction if no vector can be made from that.
+        """
+        v = self.node.velocity
+        length = math.hypot(math.hypot(v[0], v[1]), v[2])
+
+        # If we're moving too slow, the direction is iffy.
+        # Assume facing.
+        if length < 0.2:
+            v = self.get_direction_facing(scale)
+        return [v[0] * scale,
+                v[1] * scale,
+                v[2] * scale]
 
     @override
     def on_expire(self) -> None:
@@ -381,18 +412,25 @@ class Silly(bs.Actor):
         )
 
     def on_jump_press(self) -> None:
-        """
-        Called to 'press jump' on this Silly;
-        used by player or AI connections.
-        """
+        ''' Receives a jump press and registers time for cooldowns. '''
         if not self.node:
             return
+
         t_ms = int(bs.time() * 1000.0)
-        assert isinstance(t_ms, int)
-        if t_ms - self.last_jump_time_ms >= self._jump_cooldown:
-            self.node.jump_pressed = True
-            self.last_jump_time_ms = t_ms
-        self._turbo_filter_add_press('jump')
+        if (
+            not self.last_jump_time_ms is None and
+            not t_ms - self.last_jump_time_ms >= self._jump_cooldown
+        ): return
+        self.last_jump_time_ms = t_ms
+
+        if self.touching_ground == True:
+            self.jump()
+            self.last_jump_time_ms = None
+        else:
+            self.air_dash()
+            self._jump_cooldown = 1500
+
+        return True
 
     def on_jump_release(self) -> None:
         """
@@ -402,6 +440,44 @@ class Silly(bs.Actor):
         if not self.node:
             return
         self.node.jump_pressed = False
+
+    def jump(self):
+        ''' Jump! '''
+        if not self.node or self.frozen or self.node.knockout > 0.0:
+            return
+        xforce = 8
+        yforce = 20
+
+        for x in range(15):
+            v = self.node.velocity
+            self.node.handlemessage('impulse', self.node.position[0], self.node.position[1], self.node.position[2],
+                                    0, 25, 0,
+                                    yforce, 0.05, 0, 0,
+                                    0, 20*400, 0)
+
+            self.node.handlemessage('impulse', self.node.position[0], self.node.position[1], self.node.position[2],
+                                    0, 25, 0,
+                                    xforce, 0.05, 0, 0,
+                                    v[0]*15*2, 0, v[2]*15*2)
+
+    def air_dash(self):
+        ''' Dashes forward if mid-air'''
+        if not self.node or self.frozen or self.node.knockout > 0.0:
+            return
+        xforce = 25
+        yforce = 1
+
+        v = self.get_direction_velocity()
+        for x in range(15):
+            self.node.handlemessage('impulse', self.node.position[0], self.node.position[1], self.node.position[2],
+                                    0, 25, 0,
+                                    yforce, 0.05, 0, 0,
+                                    0, 20*400, 0)
+
+            self.node.handlemessage('impulse', self.node.position[0], self.node.position[1], self.node.position[2],
+                                    0, 25, 0,
+                                    xforce, 0.05, 0, 0,
+                                    v[0]*15*2, 0, v[2]*15*2)
 
     def on_pickup_press(self) -> None:
         """
@@ -1204,6 +1280,12 @@ class Silly(bs.Actor):
         elif isinstance(msg, bs.OutOfBoundsMessage):
             # By default we just die here.
             self.handlemessage(bs.DieMessage(how=bs.DeathType.FALL))
+
+        elif isinstance(msg, bs.FootConnectMessage):
+            self.touching_ground = True
+
+        elif isinstance(msg, bs.FootDisconnectMessage):
+            self.touching_ground = False
 
         elif isinstance(msg, bs.StandMessage):
             self._last_stand_pos = (

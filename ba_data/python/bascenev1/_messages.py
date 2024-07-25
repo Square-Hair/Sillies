@@ -218,6 +218,20 @@ class ThawMessage:
     Category: **Message Classes**
     """
 
+@dataclass
+class FootConnectMessage:
+    """Tells an object it's on the ground.
+
+    Category: **Message Classes**
+    """
+
+@dataclass
+class FootDisconnectMessage:
+    """Tells an object it's not on the ground.
+
+    Category: **Message Classes**
+
+    """
 
 @dataclass
 class CelebrateMessage:

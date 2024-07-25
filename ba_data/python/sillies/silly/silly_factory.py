@@ -142,7 +142,10 @@ class SillyFactory:
             conditions=('they_have_material', footing_material),
             actions=(
                 ('message', 'our_node', 'at_connect', 'footing', 1),
+                ('message', 'our_node', 'at_connect', bs.FootConnectMessage()),
+                ('modify_part_collision', 'friction', 1),
                 ('message', 'our_node', 'at_disconnect', 'footing', -1),
+                ('message', 'our_node', 'at_disconnect', bs.FootDisconnectMessage()),
             ),
         )
 

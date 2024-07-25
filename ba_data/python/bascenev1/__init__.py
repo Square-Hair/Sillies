@@ -194,6 +194,8 @@ from bascenev1._messages import (
     HitMessage,
     ImpactDamageMessage,
     OutOfBoundsMessage,
+    FootConnectMessage,
+    FootDisconnectMessage,
     PickedUpMessage,
     PickUpMessage,
     PlayerDiedMessage,

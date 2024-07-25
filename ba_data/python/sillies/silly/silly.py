@@ -1324,6 +1324,7 @@ class Silly(bs.Actor):
                     self.node.delete()
             elif self.node:
                 self.node.hurt = 1.0
+                self.shatter(extreme=True)
                 if self.play_big_death_sound and not wasdead:
                     SillyFactory.get().single_player_death_sound.play()
                 self.node.dead = True
@@ -1431,49 +1432,6 @@ class Silly(bs.Actor):
                         punchdir[2],
                         mag,
                     )
-        elif isinstance(msg, PickupMessage):
-            if not self.node:
-                return None
-
-            try:
-                collision = bs.getcollision()
-                opposingnode = collision.opposingnode
-                opposingbody = collision.opposingbody
-            except bs.NotFoundError:
-                return True
-
-            # Don't allow picking up of invincible dudes.
-            try:
-                if opposingnode.invincible:
-                    return True
-            except Exception:
-                pass
-
-            # If we're grabbing the pelvis of a non-shattered Silly, we wanna
-            # grab the torso instead.
-            if (
-                opposingnode.getnodetype() == 'Silly'
-                and not opposingnode.shattered
-                and opposingbody == 4
-            ):
-                opposingbody = 1
-
-            # Special case - if we're holding a flag, don't replace it
-            # (hmm - should make this customizable or more low level).
-            held = self.node.hold_node
-            if held and held.getnodetype() == 'flag':
-                return True
-
-            # Note: hold_body needs to be set before hold_node.
-            self.node.hold_body = opposingbody
-            self.node.hold_node = opposingnode
-        elif isinstance(msg, bs.CelebrateMessage):
-            if self.node:
-                self.node.handlemessage('celebrate', int(msg.duration * 1000))
-
-        else:
-            return super().handlemessage(msg)
-        return None
 
     def drop_bomb(self) -> Bomb | None:
         """
@@ -1536,12 +1494,6 @@ class Silly(bs.Actor):
                                     dir[0], 0, dir[2])
 
         return bomb
-
-    def _pick_up(self, node: bs.Node) -> None:
-        if self.node:
-            # Note: hold_body needs to be set before hold_node.
-            self.node.hold_body = 0
-            self.node.hold_node = node
 
     def set_land_mine_count(self, count: int) -> None:
         """Set the number of land-mines this Silly is carrying."""
@@ -1618,10 +1570,13 @@ class Silly(bs.Actor):
                 position=self.node.position,
             )
         else:
-            SillyFactory.get().splatter_sound.play(
-                1.0,
-                position=self.node.position,
-            )
+            sounds: Sequence[bs.Sound]
+            if extreme:
+                sound = SillyFactory.get().splatter_extreme_sound
+            else:
+                sounds = SillyFactory.get().splatter_sounds
+                sound = sounds[random.randrange(len(sounds))]
+            sound.play(position=self.node.position, volume=1.0)
         self.handlemessage(bs.DieMessage())
         self.node.shattered = 2 if extreme else 1
 
@@ -1629,7 +1584,7 @@ class Silly(bs.Actor):
         if not self.node:
             return
 
-        if self.node.knockout > 0.0:
+        if self.node.knockout > 0.0 or not self.is_alive():
             pos = self.node.position
             self.handlemessage(
                 bs.HitMessage(
@@ -1641,14 +1596,16 @@ class Silly(bs.Actor):
             )
             self.node.handlemessage('knockout', max(0.0, 50.0 * intensity))
             sounds: Sequence[bs.Sound]
-            if intensity >= 5.0:
+            if intensity >= 6.0:
+                sounds = SillyFactory.get().impact_sounds_giant
+            elif intensity >= 5.0:
                 sounds = SillyFactory.get().impact_sounds_harder
             elif intensity >= 3.0:
                 sounds = SillyFactory.get().impact_sounds_hard
             else:
                 sounds = SillyFactory.get().impact_sounds_medium
             sound = sounds[random.randrange(len(sounds))]
-            sound.play(position=pos, volume=5.0)
+            sound.play(position=pos, volume=2.0)
 
     def _get_bomb_type_tex(self) -> bs.Texture:
         factory = PowerupBoxFactory.get()

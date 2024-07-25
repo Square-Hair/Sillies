@@ -102,6 +102,9 @@ class SillyFactory:
         self.impact_sounds_medium = (
             bs.getsound('impactMedium'),
             bs.getsound('impactMedium2'),
+            bs.getsound('impactMedium3'),
+            bs.getsound('impactMedium4'),
+            bs.getsound('impactMedium5'),
         )
         self.impact_sounds_hard = (
             bs.getsound('impactHard'),
@@ -112,6 +115,14 @@ class SillyFactory:
             bs.getsound('bigImpact'),
             bs.getsound('bigImpact2'),
         )
+        self.impact_sounds_giant = (
+            bs.getsound('impactGiant'),
+            bs.getsound('impactGiant2',),
+            bs.getsound('impactGiant3'),
+            bs.getsound('impactGiant4'),
+            bs.getsound('impactGiant5'),
+            bs.getsound('impactGiant6'),
+        )
         self.single_player_death_sound = bs.getsound('playerDeath')
         self.punch_sound_weak = bs.getsound('punchWeak01')
         self.punch_sound = bs.getsound('punch01')
@@ -119,11 +130,22 @@ class SillyFactory:
             bs.getsound('punchStrong01'),
             bs.getsound('punchStrong02'),
         )
+
+        self.splatter_sounds = (
+            bs.getsound('splatter'),
+            bs.getsound('splatter2',),
+            bs.getsound('splatter3'),
+            bs.getsound('splatter4'),
+            bs.getsound('splatter5'),
+            bs.getsound('splatter6'),
+        )
+
+        self.splatter_extreme_sound = bs.getsound('splatterExtreme')
+
         self.punch_sound_stronger = bs.getsound('superPunch')
         self.swish_sound = bs.getsound('punchSwish')
         self.block_sound = bs.getsound('block')
         self.shatter_sound = bs.getsound('shatter')
-        self.splatter_sound = bs.getsound('splatter')
         self.silly_material = bs.Material()
         self.roller_material = bs.Material()
         self.punch_material = bs.Material()

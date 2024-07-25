@@ -28,6 +28,8 @@ POWERUP_WEAR_OFF_TIME = 20000
 BASE_HEALTH = 1500
 BASE_PUNCH_POWER_SCALE = 0.7
 
+SHIELD_HITPOINTS_MAX = 150
+
 GLOVES_PUNCH_POWER_SCALE = 0.85
 GLOVES_PUNCH_COOLDOWN = 300
 
@@ -122,7 +124,7 @@ class Silly(bs.Actor):
         self.play_big_death_sound = False
 
         # Scales how much impacts affect us (most damage calcs).
-        self.impact_scale = 1.0
+        self.impact_scale = BASE_IMPACT_SCALE
 
         self.source_player = source_player
         self._dead = False
@@ -213,7 +215,7 @@ class Silly(bs.Actor):
         self.hitpoints = self.default_hitpoints
         self.hitpoints_max = self.default_hitpoints
         self.shield_hitpoints: int | None = None
-        self.shield_hitpoints_max = 650
+        self.shield_hitpoints_max = SHIELD_HITPOINTS_MAX
         self.shield_decay_rate = 0
         self.shield_decay_timer: bs.Timer | None = None
         self._boxing_gloves_wear_off_timer: bs.Timer | None = None
@@ -367,6 +369,9 @@ class Silly(bs.Actor):
         Method override; returns whether ol' Silly is still kickin'.
         """
         return not self._dead
+
+    def _is_actionable(self) -> bool:
+        return self._state == SillyState.ACTIONABLE
 
     def _hide_score_text(self) -> None:
         if self._score_text:
@@ -693,6 +698,7 @@ class Silly(bs.Actor):
         return True
 
     def lil_dash(self) -> None:
+        if not self._is_actionable(): return
 
         SillyFactory.get().dash_sound.play(position=self.node.position, volume=1.0)
         xforce = 30
@@ -893,7 +899,7 @@ class Silly(bs.Actor):
             self.node.connectattr('position', self.shield, 'position')
 
             self.impact_scale = SHIELD_IMPACT_SCALE
-        self.shield_hitpoints = self.shield_hitpoints_max = 650
+        self.shield_hitpoints = self.shield_hitpoints_max = SHIELD_HITPOINTS_MAX
         self.shield_decay_rate = factory.shield_decay_rate if decay else 0
         self.shield.hurt = 0
         factory.shield_up_sound.play(1.0, position=self.node.position)
@@ -1182,7 +1188,7 @@ class Silly(bs.Actor):
 
             if msg.flat_damage:
                 damage = int(
-                    msg.flat_damage * self.impact_scale * shield_leftover_ratio
+                    msg.flat_damage * self.impact_scale
                 )
             else:
                 # Hit it with an impulse and get the resulting damage.
@@ -1453,7 +1459,7 @@ class Silly(bs.Actor):
                     # Uppercut
                     if self._state == SillyState.JUMPING:
                         # Yay :3
-                        self.node.handlemessage(bs.CelebrateMessage(0.45))
+                        self.node.handlemessage(bs.CelebrateMessage(1))
                         # Play sound
                         SillyFactory.get().uppercut_sound.play(position=self.node.position, volume=1.0)
                         # Emit
@@ -1466,7 +1472,7 @@ class Silly(bs.Actor):
                         xforce = 4
                         yforce = 35
 
-                        for x in range(10):
+                        for x in range(20):
                             v = self.node.velocity
                             node.handlemessage('impulse', node.position[0], node.position[1], node.position[2],
                                                     0, 25, 0,

@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, override
 
 import bascenev1 as bs
 
-from bascenev1lib.actor.playerspaz import PlayerSpaz
+from bascenev1lib.actor.playersilly import PlayerSilly
 from bascenev1lib.actor.scoreboard import Scoreboard
 from bascenev1lib.actor.flag import (
     FlagFactory,
@@ -76,15 +76,15 @@ class Team(bs.Team[Player]):
         base_pos: Sequence[float],
         base_region_material: bs.Material,
         base_region: bs.Node,
-        spaz_material_no_flag_physical: bs.Material,
-        spaz_material_no_flag_collide: bs.Material,
+        silly_material_no_flag_physical: bs.Material,
+        silly_material_no_flag_collide: bs.Material,
         flagmaterial: bs.Material,
     ):
         self.base_pos = base_pos
         self.base_region_material = base_region_material
         self.base_region = base_region
-        self.spaz_material_no_flag_physical = spaz_material_no_flag_physical
-        self.spaz_material_no_flag_collide = spaz_material_no_flag_collide
+        self.silly_material_no_flag_physical = silly_material_no_flag_physical
+        self.silly_material_no_flag_collide = silly_material_no_flag_collide
         self.flagmaterial = flagmaterial
         self.score = 0
         self.flag_return_touches = 0
@@ -219,22 +219,22 @@ class CaptureTheFlagGame(bs.TeamGameActivity[Player, Team]):
             },
         )
 
-        spaz_mat_no_flag_physical = bs.Material()
-        spaz_mat_no_flag_collide = bs.Material()
+        silly_mat_no_flag_physical = bs.Material()
+        silly_mat_no_flag_collide = bs.Material()
         flagmat = bs.Material()
 
         team = Team(
             base_pos=base_pos,
             base_region_material=base_region_mat,
             base_region=base_region,
-            spaz_material_no_flag_physical=spaz_mat_no_flag_physical,
-            spaz_material_no_flag_collide=spaz_mat_no_flag_collide,
+            silly_material_no_flag_physical=silly_mat_no_flag_physical,
+            silly_material_no_flag_collide=silly_mat_no_flag_collide,
             flagmaterial=flagmat,
         )
 
-        # Some parts of our spazzes don't collide physically with our
+        # Some parts of our sillyzes don't collide physically with our
         # flags but generate callbacks.
-        spaz_mat_no_flag_physical.add_actions(
+        silly_mat_no_flag_physical.add_actions(
             conditions=('they_have_material', flagmat),
             actions=(
                 ('modify_part_collision', 'physical', False),
@@ -251,8 +251,8 @@ class CaptureTheFlagGame(bs.TeamGameActivity[Player, Team]):
             ),
         )
 
-        # Other parts of our spazzes don't collide with our flags at all.
-        spaz_mat_no_flag_collide.add_actions(
+        # Other parts of our sillyzes don't collide with our flags at all.
+        silly_mat_no_flag_collide.add_actions(
             conditions=('they_have_material', flagmat),
             actions=('modify_part_collision', 'collide', False),
         )
@@ -488,11 +488,11 @@ class CaptureTheFlagGame(bs.TeamGameActivity[Player, Team]):
         """
         player: Player | None
         try:
-            spaz = bs.getcollision().sourcenode.getdelegate(PlayerSpaz, True)
+            silly = bs.getcollision().sourcenode.getdelegate(PlayerSilly, True)
         except bs.NotFoundError:
             return
 
-        player = spaz.getplayer(Player, True)
+        player = silly.getplayer(Player, True)
 
         if player:
             player.touching_own_flag += 1 if connecting else -1
@@ -573,43 +573,43 @@ class CaptureTheFlagGame(bs.TeamGameActivity[Player, Team]):
         bs.timer(length, light.delete)
 
     @override
-    def spawn_player_spaz(
+    def spawn_player_silly(
         self,
         player: Player,
         position: Sequence[float] | None = None,
         angle: float | None = None,
-    ) -> PlayerSpaz:
-        """Intercept new spazzes and add our team material for them."""
-        spaz = super().spawn_player_spaz(player, position, angle)
-        player = spaz.getplayer(Player, True)
+    ) -> PlayerSilly:
+        """Intercept new sillyzes and add our team material for them."""
+        silly = super().spawn_player_silly(player, position, angle)
+        player = silly.getplayer(Player, True)
         team: Team = player.team
         player.touching_own_flag = 0
         no_physical_mats: list[bs.Material] = [
-            team.spaz_material_no_flag_physical
+            team.silly_material_no_flag_physical
         ]
         no_collide_mats: list[bs.Material] = [
-            team.spaz_material_no_flag_collide
+            team.silly_material_no_flag_collide
         ]
 
         # Our normal parts should still collide; just not physically
         # (so we can calc restores).
-        assert spaz.node
-        spaz.node.materials = list(spaz.node.materials) + no_physical_mats
-        spaz.node.roller_materials = (
-            list(spaz.node.roller_materials) + no_physical_mats
+        assert silly.node
+        silly.node.materials = list(silly.node.materials) + no_physical_mats
+        silly.node.roller_materials = (
+            list(silly.node.roller_materials) + no_physical_mats
         )
 
         # Pickups and punches shouldn't hit at all though.
-        spaz.node.punch_materials = (
-            list(spaz.node.punch_materials) + no_collide_mats
+        silly.node.punch_materials = (
+            list(silly.node.punch_materials) + no_collide_mats
         )
-        spaz.node.pickup_materials = (
-            list(spaz.node.pickup_materials) + no_collide_mats
+        silly.node.pickup_materials = (
+            list(silly.node.pickup_materials) + no_collide_mats
         )
-        spaz.node.extras_material = (
-            list(spaz.node.extras_material) + no_collide_mats
+        silly.node.extras_material = (
+            list(silly.node.extras_material) + no_collide_mats
         )
-        return spaz
+        return silly
 
     def _update_scoreboard(self) -> None:
         for team in self.teams:
@@ -633,7 +633,7 @@ class CaptureTheFlagGame(bs.TeamGameActivity[Player, Team]):
             assert isinstance(msg.flag, CTFFlag)
             try:
                 msg.flag.last_player_to_hold = msg.node.getdelegate(
-                    PlayerSpaz, True
+                    PlayerSilly, True
                 ).getplayer(Player, True)
             except bs.NotFoundError:
                 pass

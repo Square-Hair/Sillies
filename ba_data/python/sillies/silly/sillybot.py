@@ -1,6 +1,6 @@
 # Released under the MIT License. See LICENSE for details.
 #
-"""Bot versions of Spaz."""
+"""Bot versions of Silly."""
 # pylint: disable=too-many-lines
 
 from __future__ import annotations
@@ -11,7 +11,7 @@ import logging
 from typing import TYPE_CHECKING, override
 
 import bascenev1 as bs
-from bascenev1lib.actor.spaz import Spaz
+from sillies.silly.silly import Silly
 
 if TYPE_CHECKING:
     from typing import Any, Sequence, Callable
@@ -25,32 +25,32 @@ PRO_BOT_COLOR = (1.0, 0.2, 0.1)
 PRO_BOT_HIGHLIGHT = (0.6, 0.1, 0.05)
 
 
-class SpazBotPunchedMessage:
-    """A message saying a bs.SpazBot got punched.
+class SillyBotPunchedMessage:
+    """A message saying a bs.SillyBot got punched.
 
     Category: **Message Classes**
     """
 
-    spazbot: SpazBot
-    """The bs.SpazBot that got punched."""
+    sillybot: SillyBot
+    """The bs.SillyBot that got punched."""
 
     damage: int
-    """How much damage was done to the SpazBot."""
+    """How much damage was done to the SillyBot."""
 
-    def __init__(self, spazbot: SpazBot, damage: int):
+    def __init__(self, sillybot: SillyBot, damage: int):
         """Instantiate a message with the given values."""
-        self.spazbot = spazbot
+        self.sillybot = sillybot
         self.damage = damage
 
 
-class SpazBotDiedMessage:
-    """A message saying a bs.SpazBot has died.
+class SillyBotDiedMessage:
+    """A message saying a bs.SillyBot has died.
 
     Category: **Message Classes**
     """
 
-    spazbot: SpazBot
-    """The SpazBot that was killed."""
+    sillybot: SillyBot
+    """The SillyBot that was killed."""
 
     killerplayer: bs.Player | None
     """The bascenev1.Player that killed it (or None)."""
@@ -60,18 +60,18 @@ class SpazBotDiedMessage:
 
     def __init__(
         self,
-        spazbot: SpazBot,
+        sillybot: SillyBot,
         killerplayer: bs.Player | None,
         how: bs.DeathType,
     ):
         """Instantiate with given values."""
-        self.spazbot = spazbot
+        self.sillybot = sillybot
         self.killerplayer = killerplayer
         self.how = how
 
 
-class SpazBot(Spaz):
-    """A really dumb AI version of bs.Spaz.
+class SillyBot(Silly):
+    """A really dumb AI version of bs.Silly.
 
     Category: **Bot Classes**
 
@@ -81,14 +81,14 @@ class SpazBot(Spaz):
     navigate obstacles and so should only be used
     on wide-open maps.
 
-    When a SpazBot is killed, it delivers a bs.SpazBotDiedMessage
+    When a SillyBot is killed, it delivers a bs.SillyBotDiedMessage
     to the current activity.
 
-    When a SpazBot is punched, it delivers a bs.SpazBotPunchedMessage
+    When a SillyBot is punched, it delivers a bs.SillyBotPunchedMessage
     to the current activity.
     """
 
-    character = 'Spaz'
+    character = 'Silly'
     punchiness = 0.5
     throwiness = 0.7
     static = False
@@ -109,7 +109,7 @@ class SpazBot(Spaz):
     highlight = DEFAULT_BOT_HIGHLIGHT
 
     def __init__(self) -> None:
-        """Instantiate a spaz-bot."""
+        """Instantiate a silly-bot."""
         super().__init__(
             color=self.color,
             highlight=self.highlight,
@@ -122,7 +122,7 @@ class SpazBot(Spaz):
         # If you need to add custom behavior to a bot, set this to a callable
         # which takes one arg (the bot) and returns False if the bot's normal
         # update should be run and True if not.
-        self.update_callback: Callable[[SpazBot], Any] | None = None
+        self.update_callback: Callable[[SillyBot], Any] | None = None
         activity = self.activity
         assert isinstance(activity, bs.GameActivity)
         self._map = weakref.ref(activity.map)
@@ -196,11 +196,11 @@ class SpazBot(Spaz):
         return None, None
 
     def set_player_points(self, pts: list[tuple[bs.Vec3, bs.Vec3]]) -> None:
-        """Provide the spaz-bot with the locations of its enemies."""
+        """Provide the silly-bot with the locations of its enemies."""
         self._player_pts = pts
 
     def update_ai(self) -> None:
-        """Should be called periodically to update the spaz' AI."""
+        """Should be called periodically to update the silly' AI."""
         # pylint: disable=too-many-branches
         # pylint: disable=too-many-statements
         # pylint: disable=too-many-locals
@@ -492,10 +492,10 @@ class SpazBot(Spaz):
     @override
     def on_punched(self, damage: int) -> None:
         """
-        Method override; sends bs.SpazBotPunchedMessage
+        Method override; sends bs.SillyBotPunchedMessage
         to the current activity.
         """
-        bs.getactivity().handlemessage(SpazBotPunchedMessage(self, damage))
+        bs.getactivity().handlemessage(SillyBotPunchedMessage(self, damage))
 
     @override
     def on_expire(self) -> None:
@@ -522,7 +522,7 @@ class SpazBot(Spaz):
             super().handlemessage(msg)  # Augment standard behavior.
             self.held_count -= 1
             if self.held_count < 0:
-                print('ERROR: spaz held_count < 0')
+                print('ERROR: silly held_count < 0')
 
             # Let's count someone dropping us as an attack.
             try:
@@ -531,7 +531,7 @@ class SpazBot(Spaz):
                 else:
                     picked_up_by = None
             except Exception:
-                logging.exception('Error on SpazBot DroppedMessage.')
+                logging.exception('Error on SillyBot DroppedMessage.')
                 picked_up_by = None
 
             if picked_up_by:
@@ -566,7 +566,7 @@ class SpazBot(Spaz):
                     killerplayer = None
                 if activity is not None:
                     activity.handlemessage(
-                        SpazBotDiedMessage(self, killerplayer, msg.how)
+                        SillyBotDiedMessage(self, killerplayer, msg.how)
                     )
             super().handlemessage(msg)  # Augment standard behavior.
 
@@ -582,13 +582,13 @@ class SpazBot(Spaz):
             super().handlemessage(msg)
 
 
-class BomberBot(SpazBot):
+class BomberBot(SillyBot):
     """A bot that throws regular bombs and occasionally punches.
 
     category: Bot Classes
     """
 
-    character = 'Spaz'
+    character = 'Silly'
     punchiness = 0.3
 
 
@@ -674,7 +674,7 @@ class BomberBotProStaticShielded(BomberBotProShielded):
     throw_dist_min = 0.0
 
 
-class BrawlerBot(SpazBot):
+class BrawlerBot(SillyBot):
     """A bot who walks and punches things.
 
     category: Bot Classes
@@ -727,7 +727,7 @@ class BrawlerBotProShielded(BrawlerBotPro):
     points_mult = 3
 
 
-class ChargerBot(SpazBot):
+class ChargerBot(SillyBot):
     """A speedy melee attack bot.
 
     category: Bot Classes
@@ -745,7 +745,7 @@ class ChargerBot(SpazBot):
     points_mult = 2
 
 
-class BouncyBot(SpazBot):
+class BouncyBot(SillyBot):
     """A speedy attacking melee bot that jumps constantly.
 
     category: Bot Classes
@@ -789,7 +789,7 @@ class ChargerBotProShielded(ChargerBotPro):
     points_mult = 4
 
 
-class TriggerBot(SpazBot):
+class TriggerBot(SillyBot):
     """A slow moving bot with trigger bombs.
 
     category: Bot Classes
@@ -846,7 +846,7 @@ class TriggerBotProShielded(TriggerBotPro):
     points_mult = 4
 
 
-class StickyBot(SpazBot):
+class StickyBot(SillyBot):
     """A crazy bot who runs and throws sticky bombs.
 
     category: Bot Classes
@@ -877,7 +877,7 @@ class StickyBotStatic(StickyBot):
     static = True
 
 
-class ExplodeyBot(SpazBot):
+class ExplodeyBot(SillyBot):
     """A bot who runs and explodes in 5 seconds.
 
     category: Bot Classes
@@ -914,8 +914,8 @@ class ExplodeyBotShielded(ExplodeyBot):
     points_mult = 5
 
 
-class SpazBotSet:
-    """A container/controller for one or more bs.SpazBots.
+class SillyBotSet:
+    """A container/controller for one or more bs.SillyBots.
 
     category: Bot Classes
     """
@@ -928,7 +928,7 @@ class SpazBotSet:
         self._bot_list_count = 5
         self._bot_add_list = 0
         self._bot_update_list = 0
-        self._bot_lists: list[list[SpazBot]] = [
+        self._bot_lists: list[list[SillyBot]] = [
             [] for _ in range(self._bot_list_count)
         ]
         self._spawn_sound = bs.getsound('spawn')
@@ -941,10 +941,10 @@ class SpazBotSet:
 
     def spawn_bot(
         self,
-        bot_type: type[SpazBot],
+        bot_type: type[SillyBot],
         pos: Sequence[float],
         spawn_time: float = 3.0,
-        on_spawn_call: Callable[[SpazBot], Any] | None = None,
+        on_spawn_call: Callable[[SillyBot], Any] | None = None,
     ) -> None:
         """Spawn a bot from this set."""
         from bascenev1lib.actor import spawner
@@ -961,20 +961,20 @@ class SpazBotSet:
 
     def _spawn_bot(
         self,
-        bot_type: type[SpazBot],
+        bot_type: type[SillyBot],
         pos: Sequence[float],
-        on_spawn_call: Callable[[SpazBot], Any] | None,
+        on_spawn_call: Callable[[SillyBot], Any] | None,
     ) -> None:
-        spaz = bot_type()
+        silly = bot_type()
         self._spawn_sound.play(position=pos)
-        assert spaz.node
-        spaz.node.handlemessage('flash')
-        spaz.node.is_area_of_interest = False
-        spaz.handlemessage(bs.StandMessage(pos, random.uniform(0, 360)))
-        self.add_bot(spaz)
+        assert silly.node
+        silly.node.handlemessage('flash')
+        silly.node.is_area_of_interest = False
+        silly.handlemessage(bs.StandMessage(pos, random.uniform(0, 360)))
+        self.add_bot(silly)
         self._spawning_count -= 1
         if on_spawn_call is not None:
-            on_spawn_call(spaz)
+            on_spawn_call(silly)
 
     def have_living_bots(self) -> bool:
         """Return whether any bots in the set are alive or spawning."""
@@ -982,9 +982,9 @@ class SpazBotSet:
             any(b.is_alive() for b in l) for l in self._bot_lists
         )
 
-    def get_living_bots(self) -> list[SpazBot]:
+    def get_living_bots(self) -> list[SillyBot]:
         """Get the living bots in the set."""
-        bots: list[SpazBot] = []
+        bots: list[SillyBot] = []
         for botlist in self._bot_lists:
             for bot in botlist:
                 if bot.is_alive():
@@ -1017,7 +1017,7 @@ class SpazBotSet:
                 # don't have to assume their actor type, but we have no
                 # abstracted velocity as of yet.
                 if player.is_alive():
-                    assert isinstance(player.actor, Spaz)
+                    assert isinstance(player.actor, Silly)
                     assert player.actor.node
                     player_pts.append(
                         (
@@ -1112,7 +1112,7 @@ class SpazBotSet:
                         bs.Call(bot.node.handlemessage, 'attack_sound'),
                     )
 
-    def add_bot(self, bot: SpazBot) -> None:
-        """Add a bs.SpazBot instance to the set."""
+    def add_bot(self, bot: SillyBot) -> None:
+        """Add a bs.SillyBot instance to the set."""
         self._bot_lists[self._bot_add_list].append(bot)
         self._bot_add_list = (self._bot_add_list + 1) % self._bot_list_count

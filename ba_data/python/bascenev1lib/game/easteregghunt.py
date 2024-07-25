@@ -13,8 +13,8 @@ from typing import TYPE_CHECKING, override
 import bascenev1 as bs
 
 from bascenev1lib.actor.bomb import Bomb
-from bascenev1lib.actor.playerspaz import PlayerSpaz
-from bascenev1lib.actor.spazbot import SpazBotSet, BouncyBot, SpazBotDiedMessage
+from bascenev1lib.actor.playersilly import PlayerSilly
+from sillies.silly.sillybot import SillyBotSet, BouncyBot, SillyBotDiedMessage
 from bascenev1lib.actor.onscreencountdown import OnScreenCountdown
 from bascenev1lib.actor.scoreboard import Scoreboard
 from bascenev1lib.actor.respawnicon import RespawnIcon
@@ -88,7 +88,7 @@ class EasterEggHuntGame(bs.TeamGameActivity[Player, Team]):
         self._eggs: list[Egg] = []
         self._update_timer: bs.Timer | None = None
         self._countdown: OnScreenCountdown | None = None
-        self._bots: SpazBotSet | None = None
+        self._bots: SillyBotSet | None = None
 
         # Base class overrides
         self.slow_motion = self._epic_mode
@@ -116,7 +116,7 @@ class EasterEggHuntGame(bs.TeamGameActivity[Player, Team]):
         self._update_timer = bs.Timer(0.25, self._update, repeat=True)
         self._countdown = OnScreenCountdown(60, endcall=self.end_game)
         bs.timer(4.0, self._countdown.start)
-        self._bots = SpazBotSet()
+        self._bots = SillyBotSet()
 
         # Spawn evil bunny in co-op only.
         if isinstance(self.session, bs.CoopSession) and self._pro_mode:
@@ -125,9 +125,9 @@ class EasterEggHuntGame(bs.TeamGameActivity[Player, Team]):
     # Overriding the default character spawning.
     @override
     def spawn_player(self, player: Player) -> bs.Actor:
-        spaz = self.spawn_player_spaz(player)
-        spaz.connect_controls_to_player()
-        return spaz
+        silly = self.spawn_player_silly(player)
+        silly.connect_controls_to_player()
+        return silly
 
     def _spawn_evil_bunny(self) -> None:
         assert self._bots is not None
@@ -143,7 +143,7 @@ class EasterEggHuntGame(bs.TeamGameActivity[Player, Team]):
         try:
             egg = collision.sourcenode.getdelegate(Egg, True)
             player = collision.opposingnode.getdelegate(
-                PlayerSpaz, True
+                PlayerSilly, True
             ).getplayer(Player, True)
         except bs.NotFoundError:
             return
@@ -214,10 +214,10 @@ class EasterEggHuntGame(bs.TeamGameActivity[Player, Team]):
             player.respawn_icon = RespawnIcon(player, respawn_time)
 
         # Whenever our evil bunny dies, respawn him and spew some eggs.
-        elif isinstance(msg, SpazBotDiedMessage):
+        elif isinstance(msg, SillyBotDiedMessage):
             self._spawn_evil_bunny()
-            assert msg.spazbot.node
-            pos = msg.spazbot.node.position
+            assert msg.sillybot.node
+            pos = msg.sillybot.node.position
             for _i in range(6):
                 spread = 0.4
                 self._eggs.append(

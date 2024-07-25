@@ -15,7 +15,7 @@ from dataclasses import dataclass
 import bascenev1 as bs
 
 from bascenev1lib.actor.bomb import Bomb
-from bascenev1lib.actor.playerspaz import PlayerSpaz
+from bascenev1lib.actor.playersilly import PlayerSilly
 from bascenev1lib.actor.scoreboard import Scoreboard
 from bascenev1lib.gameutils import SharedObjects
 
@@ -221,7 +221,7 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
             self._regions.append(RaceRegion(rpt, len(self._regions)))
 
     def _flash_player(self, player: Player, scale: float) -> None:
-        assert isinstance(player.actor, PlayerSpaz)
+        assert isinstance(player.actor, PlayerSilly)
         assert player.actor.node
         pos = player.actor.node.position
         light = bs.newnode(
@@ -244,15 +244,15 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
         collision = bs.getcollision()
         try:
             region = collision.sourcenode.getdelegate(RaceRegion, True)
-            spaz = collision.opposingnode.getdelegate(PlayerSpaz, True)
+            silly = collision.opposingnode.getdelegate(PlayerSilly, True)
         except bs.NotFoundError:
             return
 
-        if not spaz.is_alive():
+        if not silly.is_alive():
             return
 
         try:
-            player = spaz.getplayer(Player, True)
+            player = silly.getplayer(Player, True)
         except bs.NotFoundError:
             return
 
@@ -346,7 +346,7 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
 
                         # Print their lap number over their head.
                         try:
-                            assert isinstance(player.actor, PlayerSpaz)
+                            assert isinstance(player.actor, PlayerSilly)
                             mathnode = bs.newnode(
                                 'math',
                                 owner=player.actor.node,
@@ -565,7 +565,7 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
         for player in self.players:
             if player.actor is not None:
                 try:
-                    assert isinstance(player.actor, PlayerSpaz)
+                    assert isinstance(player.actor, PlayerSilly)
                     player.actor.connect_controls_to_player()
                 except Exception:
                     logging.exception('Error in race player connects.')
@@ -707,25 +707,25 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
             pos[1],
             pos[2] + random.uniform(*z_range),
         )
-        spaz = self.spawn_player_spaz(
+        silly = self.spawn_player_silly(
             player, position=pos, angle=90 if not self._race_started else None
         )
-        assert spaz.node
+        assert silly.node
 
         # Prevent controlling of characters before the start of the race.
         if not self._race_started:
-            spaz.disconnect_controls_from_player()
+            silly.disconnect_controls_from_player()
 
         mathnode = bs.newnode(
             'math',
-            owner=spaz.node,
+            owner=silly.node,
             attrs={'input1': (0, 1.4, 0), 'operation': 'add'},
         )
-        spaz.node.connectattr('torso_position', mathnode, 'input2')
+        silly.node.connectattr('torso_position', mathnode, 'input2')
 
         distance_txt = bs.newnode(
             'text',
-            owner=spaz.node,
+            owner=silly.node,
             attrs={
                 'text': '',
                 'in_world': True,
@@ -736,7 +736,7 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
         )
         player.distance_txt = distance_txt
         mathnode.connectattr('output', distance_txt, 'position')
-        return spaz
+        return silly
 
     def _check_end_game(self) -> None:
         # If there's no teams left racing, finish.

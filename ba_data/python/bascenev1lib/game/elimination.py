@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, override
 
 import bascenev1 as bs
 
-from bascenev1lib.actor.spazfactory import SpazFactory
+from sillies.silly.silly_factory import SillyFactory
 from bascenev1lib.actor.scoreboard import Scoreboard
 
 if TYPE_CHECKING:
@@ -480,7 +480,7 @@ class EliminationGame(bs.TeamGameActivity[Player, Team]):
 
     @override
     def spawn_player(self, player: Player) -> bs.Actor:
-        actor = self.spawn_player_spaz(player, self._get_spawn_point(player))
+        actor = self.spawn_player_silly(player, self._get_spawn_point(player))
         if not self._solo_mode:
             bs.timer(0.3, bs.Call(self._print_lives, player))
 
@@ -551,7 +551,7 @@ class EliminationGame(bs.TeamGameActivity[Player, Team]):
             # Play big death sound on our last death
             # or for every one in solo mode.
             if self._solo_mode or player.lives == 0:
-                SpazFactory.get().single_player_death_sound.play()
+                SillyFactory.get().single_player_death_sound.play()
 
             # If we hit zero lives, we're dead (and our team might be too).
             if player.lives == 0:

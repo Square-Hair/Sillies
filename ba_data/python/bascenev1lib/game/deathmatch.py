@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, override
 
 import bascenev1 as bs
 
-from bascenev1lib.actor.playerspaz import PlayerSpaz
+from bascenev1lib.actor.playersilly import PlayerSilly
 from bascenev1lib.actor.scoreboard import Scoreboard
 
 if TYPE_CHECKING:
@@ -180,7 +180,7 @@ class DeathMatchGame(bs.TeamGameActivity[Player, Team]):
                 self._dingsound.play()
 
                 # In FFA show scores since its hard to find on the scoreboard.
-                if isinstance(killer.actor, PlayerSpaz) and killer.actor:
+                if isinstance(killer.actor, PlayerSilly) and killer.actor:
                     killer.actor.set_score_text(
                         str(killer.team.score) + '/' + str(self._score_to_win),
                         color=killer.team.color,

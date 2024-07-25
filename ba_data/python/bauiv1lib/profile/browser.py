@@ -356,7 +356,7 @@ class ProfileBrowserWindow(bui.Window):
         # pylint: disable=too-many-statements
         from efro.util import asserttype
         from bascenev1 import PlayerProfilesChangedMessage
-        from bascenev1lib.actor import spazappearance
+        from sillies.silly import silly_appearance
 
         assert bui.app.classic is not None
 
@@ -372,17 +372,17 @@ class ProfileBrowserWindow(bui.Window):
         assert self._profiles is not None
         items = list(self._profiles.items())
         items.sort(key=lambda x: asserttype(x[0], str).lower())
-        spazzes = spazappearance.get_appearances()
-        spazzes.sort()
+        sillyzes = silly_appearance.get_appearances()
+        sillyzes.sort()
         icon_textures = [
-            bui.gettexture(bui.app.classic.spaz_appearances[s].icon_texture)
-            for s in spazzes
+            bui.gettexture(bui.app.classic.silly_appearances[s].icon_texture)
+            for s in sillyzes
         ]
         icon_tint_textures = [
             bui.gettexture(
-                bui.app.classic.spaz_appearances[s].icon_mask_texture
+                bui.app.classic.silly_appearances[s].icon_mask_texture
             )
-            for s in spazzes
+            for s in sillyzes
         ]
         index = 0
         y_val = 35 * (len(self._profiles) - 1)
@@ -406,9 +406,9 @@ class ProfileBrowserWindow(bui.Window):
             )
 
             try:
-                char_index = spazzes.index(p_info['character'])
+                char_index = sillyzes.index(p_info['character'])
             except Exception:
-                char_index = spazzes.index('Spaz')
+                char_index = sillyzes.index('Silly')
 
             assert isinstance(tval, str)
             txtw = bui.textwidget(

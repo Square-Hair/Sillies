@@ -861,7 +861,7 @@ class AccountSettingsWindow(bui.Window):
                 size=(button_width, 60),
                 label=bui.Lstr(resource='playerProfilesWindow.titleText'),
                 color=(0.55, 0.5, 0.6),
-                icon=bui.gettexture('cuteSpaz'),
+                icon=bui.gettexture('cuteSilly'),
                 textcolor=(0.75, 0.7, 0.8),
                 on_activate_call=self._player_profiles_press,
             )

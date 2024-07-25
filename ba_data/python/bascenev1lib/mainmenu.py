@@ -1101,7 +1101,7 @@ def _preload2() -> None:
 
 
 def _preload3() -> None:
-    from bascenev1lib.actor.spazfactory import SpazFactory
+    from sillies.silly.silly_factory import SillyFactory
 
     for mname in ['bomb', 'bombSticky', 'impactBomb']:
         bs.getmesh(mname)
@@ -1115,7 +1115,7 @@ def _preload3() -> None:
         bs.gettexture(tname)
     for sname in ['freeze', 'fuse01', 'activateBeep', 'warnBeep']:
         bs.getsound(sname)
-    SpazFactory.get()
+    SillyFactory.get()
     bui.apptimer(0.2, _preload4)
 
 

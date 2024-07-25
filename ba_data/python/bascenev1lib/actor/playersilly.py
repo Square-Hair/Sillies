@@ -1,6 +1,6 @@
 # Released under the MIT License. See LICENSE for details.
 #
-"""Functionality related to player-controlled Spazzes."""
+"""Functionality related to player-controlled Sillyzes."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, TypeVar, overload, override
 
 import bascenev1 as bs
 
-from bascenev1lib.actor.spaz import Spaz
+from sillies.silly.silly import Silly
 
 if TYPE_CHECKING:
     from typing import Any, Sequence, Literal
@@ -16,30 +16,30 @@ if TYPE_CHECKING:
 PlayerT = TypeVar('PlayerT', bound=bs.Player)
 
 
-class PlayerSpazHurtMessage:
-    """A message saying a PlayerSpaz was hurt.
+class PlayerSillyHurtMessage:
+    """A message saying a PlayerSilly was hurt.
 
     Category: **Message Classes**
     """
 
-    spaz: PlayerSpaz
-    """The PlayerSpaz that was hurt"""
+    silly: PlayerSilly
+    """The PlayerSilly that was hurt"""
 
-    def __init__(self, spaz: PlayerSpaz):
-        """Instantiate with the given bascenev1.Spaz value."""
-        self.spaz = spaz
+    def __init__(self, silly: PlayerSilly):
+        """Instantiate with the given bascenev1.Silly value."""
+        self.silly = silly
 
 
-class PlayerSpaz(Spaz):
-    """A Spaz subclass meant to be controlled by a bascenev1.Player.
+class PlayerSilly(Silly):
+    """A Silly subclass meant to be controlled by a bascenev1.Player.
 
     Category: **Gameplay Classes**
 
-    When a PlayerSpaz dies, it delivers a bascenev1.PlayerDiedMessage
+    When a PlayerSilly dies, it delivers a bascenev1.PlayerDiedMessage
     to the current bascenev1.Activity. (unless the death was the result
     of the player leaving the game, in which case no message is sent)
 
-    When a PlayerSpaz is hurt, it delivers a PlayerSpazHurtMessage
+    When a PlayerSilly is hurt, it delivers a PlayerSillyHurtMessage
     to the current bascenev1.Activity.
     """
 
@@ -48,10 +48,10 @@ class PlayerSpaz(Spaz):
         player: bs.Player,
         color: Sequence[float] = (1.0, 1.0, 1.0),
         highlight: Sequence[float] = (0.5, 0.5, 0.5),
-        character: str = 'Spaz',
+        character: str = 'Silly',
         powerups_expire: bool = True,
     ):
-        """Create a spaz for the provided bascenev1.Player.
+        """Create a silly for the provided bascenev1.Player.
 
         Note: this does not wire up any controls;
         you must call connect_controls_to_player() to do so.
@@ -88,7 +88,7 @@ class PlayerSpaz(Spaz):
     def getplayer(
         self, playertype: type[PlayerT], doraise: bool = False
     ) -> PlayerT | None:
-        """Get the bascenev1.Player associated with this Spaz.
+        """Get the bascenev1.Player associated with this Silly.
 
         By default this will return None if the Player no longer exists.
         If you are logically certain that the Player still exists, pass
@@ -109,7 +109,7 @@ class PlayerSpaz(Spaz):
         enable_run: bool = True,
         enable_fly: bool = True,
     ) -> None:
-        """Wire this spaz up to the provided bascenev1.Player.
+        """Wire this silly up to the provided bascenev1.Player.
 
         Full control of the character is given by default
         but can be selectively limited by passing False
@@ -160,7 +160,7 @@ class PlayerSpaz(Spaz):
     def disconnect_controls_from_player(self) -> None:
         """
         Completely sever any previously connected
-        bascenev1.Player from control of this spaz.
+        bascenev1.Player from control of this silly.
         """
         if self._connected_to_player:
             self._connected_to_player.resetinput()
@@ -203,7 +203,7 @@ class PlayerSpaz(Spaz):
             super().handlemessage(msg)
             self.held_count -= 1
             if self.held_count < 0:
-                print('ERROR: spaz held_count < 0')
+                print('ERROR: silly held_count < 0')
 
             # Let's count someone dropping us as an attack.
             picked_up_by = msg.node.source_player
@@ -214,7 +214,7 @@ class PlayerSpaz(Spaz):
         elif isinstance(msg, bs.StandMessage):
             super().handlemessage(msg)  # Augment standard behavior.
 
-            # Our Spaz was just moved somewhere. Explicitly update
+            # Our Silly was just moved somewhere. Explicitly update
             # our associated player's position in case it is being used
             # for logic (otherwise it will be out of date until next step)
             self._drive_player_position()
@@ -290,7 +290,7 @@ class PlayerSpaz(Spaz):
             super().handlemessage(msg)  # Augment standard behavior.
             activity = self._activity()
             if activity is not None and self._player.exists():
-                activity.handlemessage(PlayerSpazHurtMessage(self))
+                activity.handlemessage(PlayerSillyHurtMessage(self))
         else:
             return super().handlemessage(msg)
         return None

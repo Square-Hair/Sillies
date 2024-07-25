@@ -21,13 +21,13 @@ import bascenev1 as bs
 
 from bascenev1lib.actor.popuptext import PopupText
 from bascenev1lib.actor.bomb import TNTSpawner
-from bascenev1lib.actor.playerspaz import PlayerSpazHurtMessage
+from bascenev1lib.actor.playersilly import PlayerSillyHurtMessage
 from bascenev1lib.actor.scoreboard import Scoreboard
 from bascenev1lib.actor.controlsguide import ControlsGuide
 from bascenev1lib.actor.powerupbox import PowerupBox, PowerupBoxFactory
-from bascenev1lib.actor.spazbot import (
-    SpazBotDiedMessage,
-    SpazBotSet,
+from sillies.silly.sillybot import (
+    SillyBotDiedMessage,
+    SillyBotSet,
     ChargerBot,
     StickyBot,
     BomberBot,
@@ -50,7 +50,7 @@ from bascenev1lib.actor.spazbot import (
 
 if TYPE_CHECKING:
     from typing import Any, Sequence
-    from bascenev1lib.actor.spazbot import SpazBot
+    from sillies.silly.sillybot import SillyBot
 
 
 @dataclass
@@ -65,7 +65,7 @@ class Wave:
 class Spawn:
     """A bot spawn event in a wave."""
 
-    bottype: type[SpazBot] | str
+    bottype: type[SillyBot] | str
     point: Point | None = None
     spacing: float = 5.0
 
@@ -212,7 +212,7 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
         self._excluded_powerups: list[str] | None = None
         self._waves: list[Wave] = []
         self._tntspawner: TNTSpawner | None = None
-        self._bots: SpazBotSet | None = None
+        self._bots: SillyBotSet | None = None
         self._powerup_drop_timer: bs.Timer | None = None
         self._time_bonus_timer: bs.Timer | None = None
         self._time_bonus_text: bs.NodeActor | None = None
@@ -783,7 +783,7 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
 
         self.setup_low_life_warning_sound()
         self._update_scores()
-        self._bots = SpazBotSet()
+        self._bots = SillyBotSet()
         bs.timer(4.0, self._start_updating_waves)
 
     def _get_dist_grp_totals(self, grps: list[Any]) -> tuple[int, int]:
@@ -938,16 +938,16 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
             self._spawn_center[1],
             self._spawn_center[2] + random.uniform(-1.5, 1.5),
         )
-        spaz = self.spawn_player_spaz(player, position=pos)
+        silly = self.spawn_player_silly(player, position=pos)
         if self._preset in {
             Preset.TRAINING_EASY,
             Preset.ROOKIE_EASY,
             Preset.PRO_EASY,
             Preset.UBER_EASY,
         }:
-            spaz.impact_scale = 0.25
-        spaz.add_dropped_bomb_callback(self._handle_player_dropped_bomb)
-        return spaz
+            silly.impact_scale = 0.25
+        silly.add_dropped_bomb_callback(self._handle_player_dropped_bomb)
+        return silly
 
     def _handle_player_dropped_bomb(
         self, player: bs.Actor, bomb: bs.Actor
@@ -1348,7 +1348,7 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
             )
         )
 
-    def _bot_levels_for_wave(self) -> list[list[type[SpazBot]]]:
+    def _bot_levels_for_wave(self) -> list[list[type[SillyBot]]]:
         level = self._wavenum
         bot_types = [
             BomberBot,
@@ -1408,7 +1408,7 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
     def _add_entries_for_distribution_group(
         self,
         group: list[tuple[int, int]],
-        bot_levels: list[list[type[SpazBot]]],
+        bot_levels: list[list[type[SillyBot]]],
         all_entries: list[Spawn | Spacing | Delay | None],
     ) -> None:
         entries: list[Spawn | Spacing | Delay | None] = []
@@ -1465,7 +1465,7 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
         return wave
 
     def add_bot_at_point(
-        self, point: Point, spaz_type: type[SpazBot], spawn_time: float = 1.0
+        self, point: Point, silly_type: type[SillyBot], spawn_time: float = 1.0
     ) -> None:
         """Add a new bot at a specified named point."""
         if self._game_over:
@@ -1473,10 +1473,10 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
         assert isinstance(point.value, str)
         pointpos = self.map.defs.points[point.value]
         assert self._bots is not None
-        self._bots.spawn_bot(spaz_type, pos=pointpos, spawn_time=spawn_time)
+        self._bots.spawn_bot(silly_type, pos=pointpos, spawn_time=spawn_time)
 
     def add_bot_at_angle(
-        self, angle: float, spaz_type: type[SpazBot], spawn_time: float = 1.0
+        self, angle: float, silly_type: type[SillyBot], spawn_time: float = 1.0
     ) -> None:
         """Add a new bot at a specified angle (for circular maps)."""
         if self._game_over:
@@ -1486,7 +1486,7 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
         zval = math.cos(angle_radians) * 1.06
         point = (xval / 0.125, 2.3, (zval / 0.2) - 3.7)
         assert self._bots is not None
-        self._bots.spawn_bot(spaz_type, pos=point, spawn_time=spawn_time)
+        self._bots.spawn_bot(silly_type, pos=point, spawn_time=spawn_time)
 
     def _update_time_bonus(self) -> None:
         self._time_bonus = int(self._time_bonus * 0.93)
@@ -1521,8 +1521,8 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
 
     @override
     def handlemessage(self, msg: Any) -> Any:
-        if isinstance(msg, PlayerSpazHurtMessage):
-            msg.spaz.getplayer(Player, True).has_been_hurt = True
+        if isinstance(msg, PlayerSillyHurtMessage):
+            msg.silly.getplayer(Player, True).has_been_hurt = True
             self._a_player_has_been_hurt = True
 
         elif isinstance(msg, bs.PlayerScoredMessage):
@@ -1544,13 +1544,13 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
             bs.timer(0.1, self._update_player_spawn_info)
             bs.timer(0.1, self._checkroundover)
 
-        elif isinstance(msg, SpazBotDiedMessage):
-            pts, importance = msg.spazbot.get_death_points(msg.how)
+        elif isinstance(msg, SillyBotDiedMessage):
+            pts, importance = msg.sillybot.get_death_points(msg.how)
             if msg.killerplayer is not None:
                 self._handle_kill_achievements(msg)
                 target: Sequence[float] | None
-                if msg.spazbot.node:
-                    target = msg.spazbot.node.position
+                if msg.sillybot.node:
+                    target = msg.sillybot.node.position
                 else:
                     target = None
 
@@ -1576,7 +1576,7 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
         else:
             super().handlemessage(msg)
 
-    def _handle_kill_achievements(self, msg: SpazBotDiedMessage) -> None:
+    def _handle_kill_achievements(self, msg: SillyBotDiedMessage) -> None:
         if self._preset in {Preset.TRAINING, Preset.TRAINING_EASY}:
             self._handle_training_kill_achievements(msg)
         elif self._preset in {Preset.ROOKIE, Preset.ROOKIE_EASY}:
@@ -1586,24 +1586,24 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
         elif self._preset in {Preset.UBER, Preset.UBER_EASY}:
             self._handle_uber_kill_achievements(msg)
 
-    def _handle_uber_kill_achievements(self, msg: SpazBotDiedMessage) -> None:
+    def _handle_uber_kill_achievements(self, msg: SillyBotDiedMessage) -> None:
         # Uber mine achievement:
-        if msg.spazbot.last_attacked_type == ('explosion', 'land_mine'):
+        if msg.sillybot.last_attacked_type == ('explosion', 'land_mine'):
             self._land_mine_kills += 1
             if self._land_mine_kills >= 6:
                 self._award_achievement('Gold Miner')
 
         # Uber tnt achievement:
-        if msg.spazbot.last_attacked_type == ('explosion', 'tnt'):
+        if msg.sillybot.last_attacked_type == ('explosion', 'tnt'):
             self._tnt_kills += 1
             if self._tnt_kills >= 6:
                 bs.timer(
                     0.5, bs.WeakCall(self._award_achievement, 'TNT Terror')
                 )
 
-    def _handle_pro_kill_achievements(self, msg: SpazBotDiedMessage) -> None:
+    def _handle_pro_kill_achievements(self, msg: SillyBotDiedMessage) -> None:
         # TNT achievement:
-        if msg.spazbot.last_attacked_type == ('explosion', 'tnt'):
+        if msg.sillybot.last_attacked_type == ('explosion', 'tnt'):
             self._tnt_kills += 1
             if self._tnt_kills >= 3:
                 bs.timer(
@@ -1613,18 +1613,18 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
                     ),
                 )
 
-    def _handle_rookie_kill_achievements(self, msg: SpazBotDiedMessage) -> None:
+    def _handle_rookie_kill_achievements(self, msg: SillyBotDiedMessage) -> None:
         # Land-mine achievement:
-        if msg.spazbot.last_attacked_type == ('explosion', 'land_mine'):
+        if msg.sillybot.last_attacked_type == ('explosion', 'land_mine'):
             self._land_mine_kills += 1
             if self._land_mine_kills >= 3:
                 self._award_achievement('Mine Games')
 
     def _handle_training_kill_achievements(
-        self, msg: SpazBotDiedMessage
+        self, msg: SillyBotDiedMessage
     ) -> None:
         # Toss-off-map achievement:
-        if msg.spazbot.last_attacked_type == ('picked_up', 'default'):
+        if msg.sillybot.last_attacked_type == ('picked_up', 'default'):
             self._throw_off_kills += 1
             if self._throw_off_kills >= 3:
                 self._award_achievement('Off You Go Then')

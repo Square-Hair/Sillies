@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, override
 
 import bascenev1 as bs
 
-from bascenev1lib.actor.playerspaz import PlayerSpaz
+from bascenev1lib.actor.playersilly import PlayerSilly
 from bascenev1lib.actor.flag import Flag
 from bascenev1lib.actor.scoreboard import Scoreboard
 from bascenev1lib.gameutils import SharedObjects
@@ -192,15 +192,15 @@ class AssaultGame(bs.TeamGameActivity[Player, Team]):
 
     def _handle_base_collide(self, team: Team) -> None:
         try:
-            spaz = bs.getcollision().opposingnode.getdelegate(PlayerSpaz, True)
+            silly = bs.getcollision().opposingnode.getdelegate(PlayerSilly, True)
         except bs.NotFoundError:
             return
 
-        if not spaz.is_alive():
+        if not silly.is_alive():
             return
 
         try:
-            player = spaz.getplayer(Player, True)
+            player = silly.getplayer(Player, True)
         except bs.NotFoundError:
             return
 

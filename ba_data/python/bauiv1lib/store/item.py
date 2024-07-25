@@ -79,7 +79,7 @@ def instantiate_store_item_display(
 
     if item_name.startswith('characters.'):
         assert bui.app.classic is not None
-        character = bui.app.classic.spaz_appearances[item_info['character']]
+        character = bui.app.classic.silly_appearances[item_info['character']]
         tint_color = (
             item_info['color']
             if 'color' in item_info
@@ -310,7 +310,7 @@ def instantiate_store_item_display(
                 b_pos[1] + b_height * pos[1],
             )
             assert bui.app.classic is not None
-            character = bui.app.classic.spaz_appearances[charname]
+            character = bui.app.classic.silly_appearances[charname]
             extra_backings.append(
                 bui.imagewidget(
                     parent=parent_widget,

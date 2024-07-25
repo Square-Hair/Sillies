@@ -270,7 +270,7 @@ class AccountViewerWindow(PopupWindow):
                         if data['profile'] is not None:
                             profile = data['profile']
                             assert bui.app.classic is not None
-                            character = bui.app.classic.spaz_appearances.get(
+                            character = bui.app.classic.silly_appearances.get(
                                 profile['character'], None
                             )
                             if character is not None:

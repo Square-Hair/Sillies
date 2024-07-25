@@ -11,13 +11,13 @@ from typing import TYPE_CHECKING, override
 
 import bascenev1 as bs
 
-from bascenev1lib.actor.playerspaz import PlayerSpaz
+from bascenev1lib.actor.playersilly import PlayerSilly
 from bascenev1lib.actor.bomb import TNTSpawner
 from bascenev1lib.actor.scoreboard import Scoreboard
 from bascenev1lib.actor.powerupbox import PowerupBoxFactory, PowerupBox
-from bascenev1lib.actor.spazbot import (
-    SpazBotSet,
-    SpazBotDiedMessage,
+from sillies.silly.sillybot import (
+    SillyBotSet,
+    SillyBotDiedMessage,
     BomberBot,
     BomberBotPro,
     BomberBotProShielded,
@@ -34,7 +34,7 @@ from bascenev1lib.actor.spazbot import (
 
 if TYPE_CHECKING:
     from typing import Any, Sequence
-    from bascenev1lib.actor.spazbot import SpazBot
+    from sillies.silly.sillybot import SillyBot
 
 
 @dataclass
@@ -86,7 +86,7 @@ class TheLastStandGame(bs.CoopGameActivity[Player, Team]):
         self._excludepowerups: list[str] = []
         self._scoreboard: Scoreboard | None = None
         self._score = 0
-        self._bots = SpazBotSet()
+        self._bots = SillyBotSet()
         self._dingsound = bs.getsound('dingSmall')
         self._dingsoundhigh = bs.getsound('dingSmallHigh')
         self._tntspawner: TNTSpawner | None = None
@@ -139,7 +139,7 @@ class TheLastStandGame(bs.CoopGameActivity[Player, Team]):
             self._spawn_center[1],
             self._spawn_center[2] + random.uniform(-1.5, 1.5),
         )
-        return self.spawn_player_spaz(player, position=pos)
+        return self.spawn_player_silly(player, position=pos)
 
     def _start_bot_updates(self) -> None:
         self._bot_update_interval = 3.3 - 0.3 * (len(self.players))
@@ -234,7 +234,7 @@ class TheLastStandGame(bs.CoopGameActivity[Player, Team]):
         for player in self.players:
             try:
                 if player.is_alive():
-                    assert isinstance(player.actor, PlayerSpaz)
+                    assert isinstance(player.actor, PlayerSilly)
                     assert player.actor.node
                     playerpts.append(player.actor.node.position)
             except Exception:
@@ -264,7 +264,7 @@ class TheLastStandGame(bs.CoopGameActivity[Player, Team]):
 
         # Now go back through and see where this value falls.
         total = 0
-        bottype: type[SpazBot] | None = None
+        bottype: type[SillyBot] | None = None
         for spawntype, spawninfo in self._bot_spawn_types.items():
             total += spawninfo.spawnrate
             if randval <= total:
@@ -305,12 +305,12 @@ class TheLastStandGame(bs.CoopGameActivity[Player, Team]):
             self._score += msg.score
             self._update_scores()
 
-        elif isinstance(msg, SpazBotDiedMessage):
-            pts, importance = msg.spazbot.get_death_points(msg.how)
+        elif isinstance(msg, SillyBotDiedMessage):
+            pts, importance = msg.sillybot.get_death_points(msg.how)
             target: Sequence[float] | None
             if msg.killerplayer:
-                assert msg.spazbot.node
-                target = msg.spazbot.node.position
+                assert msg.sillybot.node
+                target = msg.sillybot.node.position
                 self.stats.player_scored(
                     msg.killerplayer,
                     pts,

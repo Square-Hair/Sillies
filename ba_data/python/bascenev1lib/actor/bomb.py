@@ -1094,7 +1094,7 @@ class Bomb(bs.Actor):
         factory.activate_sound.play(0.5, position=self.node.position)
 
     def _handle_hit(self, msg: bs.HitMessage) -> None:
-        ispunched = msg.srcnode and msg.srcnode.getnodetype() == 'spaz'
+        ispunched = msg.srcnode and msg.srcnode.getnodetype() == 'silly'
 
         # Normal bombs are triggered by non-punch impacts;
         # impact-bombs by all impacts.

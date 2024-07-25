@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, override
 
 import bascenev1 as bs
 
-from bascenev1lib.actor.playerspaz import PlayerSpaz
+from bascenev1lib.actor.playersilly import PlayerSilly
 from bascenev1lib.actor.scoreboard import Scoreboard
 from bascenev1lib.actor.flag import (
     Flag,
@@ -203,7 +203,7 @@ class KeepAwayGame(bs.TeamGameActivity[Player, Team]):
         for player in self.players:
             holdingflag = False
             try:
-                assert isinstance(player.actor, (PlayerSpaz, type(None)))
+                assert isinstance(player.actor, (PlayerSilly, type(None)))
                 if (
                     player.actor
                     and player.actor.node

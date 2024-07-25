@@ -116,17 +116,17 @@ class MeteorShowerGame(bs.TeamGameActivity[Player, Team]):
     # overriding the default character spawning..
     @override
     def spawn_player(self, player: Player) -> bs.Actor:
-        spaz = self.spawn_player_spaz(player)
+        silly = self.spawn_player_silly(player)
 
         # Let's reconnect this player's controls to this
-        # spaz but *without* the ability to attack or pick stuff up.
-        spaz.connect_controls_to_player(
+        # silly but *without* the ability to attack or pick stuff up.
+        silly.connect_controls_to_player(
             enable_punch=False, enable_bomb=False, enable_pickup=False
         )
 
         # Also lets have them make some noise when they die.
-        spaz.play_big_death_sound = True
-        return spaz
+        silly.play_big_death_sound = True
+        return silly
 
     # Various high-level game events come through this method.
     @override
@@ -138,7 +138,7 @@ class MeteorShowerGame(bs.TeamGameActivity[Player, Team]):
             curtime = bs.time()
 
             # Record the player's moment of death.
-            # assert isinstance(msg.spaz.player
+            # assert isinstance(msg.silly.player
             msg.getplayer(Player).death_time = curtime
 
             # In co-op mode, end the game the instant everyone dies

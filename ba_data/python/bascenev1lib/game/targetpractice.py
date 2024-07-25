@@ -102,16 +102,16 @@ class TargetPracticeGame(bs.TeamGameActivity[Player, Team]):
 
         # Reset their streak.
         player.streak = 0
-        spaz = self.spawn_player_spaz(player, position=pos)
+        silly = self.spawn_player_silly(player, position=pos)
 
         # Give players permanent triple impact bombs and wire them up
         # to tell us when they drop a bomb.
         if self._enable_impact_bombs:
-            spaz.bomb_type = 'impact'
+            silly.bomb_type = 'impact'
         if self._enable_triple_bombs:
-            spaz.set_bomb_count(3)
-        spaz.add_dropped_bomb_callback(self._on_spaz_dropped_bomb)
-        return spaz
+            silly.set_bomb_count(3)
+        silly.add_dropped_bomb_callback(self._on_silly_dropped_bomb)
+        return silly
 
     def _spawn_target(self) -> None:
         # Generate a few random points; we'll use whichever one is farthest
@@ -139,8 +139,8 @@ class TargetPracticeGame(bs.TeamGameActivity[Player, Team]):
 
         self._targets.append(Target(position=point))
 
-    def _on_spaz_dropped_bomb(self, spaz: bs.Actor, bomb: bs.Actor) -> None:
-        del spaz  # Unused.
+    def _on_silly_dropped_bomb(self, silly: bs.Actor, bomb: bs.Actor) -> None:
+        del silly  # Unused.
 
         # Wire up this bomb to inform us when it blows up.
         assert isinstance(bomb, Bomb)

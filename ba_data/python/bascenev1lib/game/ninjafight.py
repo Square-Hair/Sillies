@@ -12,10 +12,10 @@ from typing import TYPE_CHECKING, override
 
 import bascenev1 as bs
 
-from bascenev1lib.actor.spazbot import (
-    SpazBotSet,
+from sillies.silly.sillybot import (
+    SillyBotSet,
     ChargerBot,
-    SpazBotDiedMessage,
+    SillyBotDiedMessage,
 )
 from bascenev1lib.actor.onscreentimer import OnScreenTimer
 
@@ -66,7 +66,7 @@ class NinjaFightGame(bs.TeamGameActivity[Player, Team]):
         self._winsound = bs.getsound('score')
         self._won = False
         self._timer: OnScreenTimer | None = None
-        self._bots = SpazBotSet()
+        self._bots = SillyBotSet()
         self._preset = str(settings['preset'])
 
     # Called when our game actually begins.
@@ -136,7 +136,7 @@ class NinjaFightGame(bs.TeamGameActivity[Player, Team]):
             spawn_center[1],
             spawn_center[2] + random.uniform(-1.5, 1.5),
         )
-        return self.spawn_player_spaz(player, position=pos)
+        return self.spawn_player_silly(player, position=pos)
 
     def _check_if_won(self) -> None:
         # Simply end the game if there's no living bots.
@@ -156,8 +156,8 @@ class NinjaFightGame(bs.TeamGameActivity[Player, Team]):
             super().handlemessage(msg)  # Augment standard behavior.
             self.respawn_player(msg.getplayer(Player))
 
-        # A spaz-bot has died.
-        elif isinstance(msg, SpazBotDiedMessage):
+        # A silly-bot has died.
+        elif isinstance(msg, SillyBotDiedMessage):
             # Unfortunately the bot-set will always tell us there are living
             # bots if we ask here (the currently-dying bot isn't officially
             # marked dead yet) ..so lets push a call into the event loop to

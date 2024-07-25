@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING, override
 import bascenev1 as bs
 
 from bascenev1lib.actor.flag import Flag
-from bascenev1lib.actor.playerspaz import PlayerSpaz
+from bascenev1lib.actor.playersilly import PlayerSilly
 from bascenev1lib.actor.scoreboard import Scoreboard
 from bascenev1lib.gameutils import SharedObjects
 
@@ -266,14 +266,14 @@ class KingOfTheHillGame(bs.TeamGameActivity[Player, Team]):
 
     def _handle_player_flag_region_collide(self, colliding: bool) -> None:
         try:
-            spaz = bs.getcollision().opposingnode.getdelegate(PlayerSpaz, True)
+            silly = bs.getcollision().opposingnode.getdelegate(PlayerSilly, True)
         except bs.NotFoundError:
             return
 
-        if not spaz.is_alive():
+        if not silly.is_alive():
             return
 
-        player = spaz.getplayer(Player, True)
+        player = silly.getplayer(Player, True)
 
         # Different parts of us can collide so a single value isn't enough
         # also don't count it if we're dead (flying heads shouldn't be able to

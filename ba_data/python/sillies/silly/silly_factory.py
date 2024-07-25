@@ -1,6 +1,6 @@
 # Released under the MIT License. See LICENSE for details.
 #
-"""Provides a factory object from creating Spazzes."""
+"""Provides a factory object from creating Sillyzes."""
 
 from __future__ import annotations
 
@@ -13,28 +13,28 @@ if TYPE_CHECKING:
     from typing import Any, Sequence
 
 
-class SpazFactory:
-    """Wraps up media and other resources used by bs.Spaz instances.
+class SillyFactory:
+    """Wraps up media and other resources used by bs.Silly instances.
 
     Category: **Gameplay Classes**
 
     Generally one of these is created per bascenev1.Activity and shared
-    between all spaz instances. Use bs.Spaz.get_factory() to return
+    between all silly instances. Use bs.Silly.get_factory() to return
     the shared factory for the current activity.
     """
 
     impact_sounds_medium: Sequence[bs.Sound]
-    """A tuple of bs.Sound-s for when a bs.Spaz hits something kinda hard."""
+    """A tuple of bs.Sound-s for when a bs.Silly hits something kinda hard."""
 
     impact_sounds_hard: Sequence[bs.Sound]
-    """A tuple of bs.Sound-s for when a bs.Spaz hits something really hard."""
+    """A tuple of bs.Sound-s for when a bs.Silly hits something really hard."""
 
     impact_sounds_harder: Sequence[bs.Sound]
-    """A tuple of bs.Sound-s for when a bs.Spaz hits something really
+    """A tuple of bs.Sound-s for when a bs.Silly hits something really
        really hard."""
 
     single_player_death_sound: bs.Sound
-    """The sound that plays for an 'important' spaz death such as in
+    """The sound that plays for an 'important' silly death such as in
        co-op games."""
 
     punch_sound_weak: bs.Sound
@@ -56,26 +56,26 @@ class SpazFactory:
     """A bs.Sound for when an attack is blocked by invincibility."""
 
     shatter_sound: bs.Sound
-    """A bs.Sound for when a frozen bs.Spaz shatters."""
+    """A bs.Sound for when a frozen bs.Silly shatters."""
 
     splatter_sound: bs.Sound
-    """A bs.Sound for when a bs.Spaz blows up via curse."""
+    """A bs.Sound for when a bs.Silly blows up via curse."""
 
-    spaz_material: bs.Material
-    """A bs.Material applied to all of parts of a bs.Spaz."""
+    silly_material: bs.Material
+    """A bs.Material applied to all of parts of a bs.Silly."""
 
     roller_material: bs.Material
     """A bs.Material applied to the invisible roller ball body that
-       a bs.Spaz uses for locomotion."""
+       a bs.Silly uses for locomotion."""
 
     punch_material: bs.Material
-    """A bs.Material applied to the 'fist' of a bs.Spaz."""
+    """A bs.Material applied to the 'fist' of a bs.Silly."""
 
     pickup_material: bs.Material
-    """A bs.Material applied to the 'grabber' body of a bs.Spaz."""
+    """A bs.Material applied to the 'grabber' body of a bs.Silly."""
 
     curse_material: bs.Material
-    """A bs.Material applied to a cursed bs.Spaz that triggers an explosion."""
+    """A bs.Material applied to a cursed bs.Silly that triggers an explosion."""
 
     _STORENAME = bs.storagename()
 
@@ -92,7 +92,7 @@ class SpazFactory:
 
         # FIXME: should probably put these somewhere common so we don't
         # have to import them from a module that imports us.
-        from bascenev1lib.actor.spaz import (
+        from sillies.silly.silly import (
             PickupMessage,
             PunchHitMessage,
             CurseExplodeMessage,
@@ -124,7 +124,7 @@ class SpazFactory:
         self.block_sound = bs.getsound('block')
         self.shatter_sound = bs.getsound('shatter')
         self.splatter_sound = bs.getsound('splatter')
-        self.spaz_material = bs.Material()
+        self.silly_material = bs.Material()
         self.roller_material = bs.Material()
         self.punch_material = bs.Material()
         self.pickup_material = bs.Material()
@@ -135,9 +135,9 @@ class SpazFactory:
         player_material = shared.player_material
         region_material = shared.region_material
 
-        # Send footing messages to spazzes so they know when they're on
+        # Send footing messages to sillyzes so they know when they're on
         # solid ground.
-        # Eww; this probably should just be built into the spaz node.
+        # Eww; this probably should just be built into the silly node.
         self.roller_material.add_actions(
             conditions=('they_have_material', footing_material),
             actions=(
@@ -146,7 +146,7 @@ class SpazFactory:
             ),
         )
 
-        self.spaz_material.add_actions(
+        self.silly_material.add_actions(
             conditions=('they_have_material', footing_material),
             actions=(
                 ('message', 'our_node', 'at_connect', 'footing', 1),
@@ -213,7 +213,7 @@ class SpazFactory:
 
         self.skid_sound = bs.getsound('gravelSkid')
 
-        self.spaz_material.add_actions(
+        self.silly_material.add_actions(
             conditions=('they_have_material', footing_material),
             actions=(
                 ('impact_sound', self.foot_impact_sounds, 20, 6),
@@ -228,7 +228,7 @@ class SpazFactory:
 
         # We don't want to collide with stuff we're initially overlapping
         # (unless its marked with a special region material).
-        self.spaz_material.add_actions(
+        self.silly_material.add_actions(
             conditions=(
                 (
                     ('we_are_younger_than', 51),
@@ -241,7 +241,7 @@ class SpazFactory:
             actions=('modify_node_collision', 'collide', False),
         )
 
-        self.spaz_media: dict[str, Any] = {}
+        self.silly_media: dict[str, Any] = {}
 
         # Lets load some basic rules.
         # (allows them to be tweaked from the master server)
@@ -264,14 +264,14 @@ class SpazFactory:
         (this influences subtle aspects of their appearance, etc)
         """
         assert bs.app.classic is not None
-        return bs.app.classic.spaz_appearances[character].style
+        return bs.app.classic.silly_appearances[character].style
 
     def get_media(self, character: str) -> dict[str, Any]:
-        """Return the set of media used by this variant of spaz."""
+        """Return the set of media used by this variant of silly."""
         assert bs.app.classic is not None
-        char = bs.app.classic.spaz_appearances[character]
-        if character not in self.spaz_media:
-            media = self.spaz_media[character] = {
+        char = bs.app.classic.silly_appearances[character]
+        if character not in self.silly_media:
+            media = self.silly_media[character] = {
                 'jump_sounds': [bs.getsound(s) for s in char.jump_sounds],
                 'attack_sounds': [bs.getsound(s) for s in char.attack_sounds],
                 'impact_sounds': [bs.getsound(s) for s in char.impact_sounds],
@@ -291,16 +291,16 @@ class SpazFactory:
                 'toes_mesh': bs.getmesh(char.toes_mesh),
             }
         else:
-            media = self.spaz_media[character]
+            media = self.silly_media[character]
         return media
 
     @classmethod
-    def get(cls) -> SpazFactory:
-        """Return the shared bs.SpazFactory, creating it if necessary."""
+    def get(cls) -> SillyFactory:
+        """Return the shared bs.SillyFactory, creating it if necessary."""
         # pylint: disable=cyclic-import
         activity = bs.getactivity()
         factory = activity.customdata.get(cls._STORENAME)
         if factory is None:
-            factory = activity.customdata[cls._STORENAME] = SpazFactory()
-        assert isinstance(factory, SpazFactory)
+            factory = activity.customdata[cls._STORENAME] = SillyFactory()
+        assert isinstance(factory, SillyFactory)
         return factory

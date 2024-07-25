@@ -34,7 +34,7 @@ class Actor:
     Actors act as controllers, combining some number of Nodes, Textures,
     Sounds, etc. into a high-level cohesive unit.
 
-    Some example actors include the Bomb, Flag, and Spaz classes that
+    Some example actors include the Bomb, Flag, and Silly classes that
     live in the bascenev1lib.actor.* modules.
 
     One key feature of Actors is that they generally 'die'

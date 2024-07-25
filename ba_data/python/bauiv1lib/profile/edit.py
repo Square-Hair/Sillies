@@ -50,7 +50,7 @@ class EditProfileWindow(bui.Window):
         self._in_main_menu = in_main_menu
         self._existing_profile = existing_profile
         self._r = 'editProfileWindow'
-        self._spazzes: list[str] = []
+        self._sillyzes: list[str] = []
         self._icon_textures: list[bui.Texture] = []
         self._icon_tint_textures: list[bui.Texture] = []
 
@@ -121,7 +121,7 @@ class EditProfileWindow(bui.Window):
             v_align='center',
         )
 
-        # Make a list of spaz icons.
+        # Make a list of silly icons.
         self.refresh_characters()
         profile = bui.app.config.get('Player Profiles', {}).get(
             self._existing_profile, {}
@@ -141,18 +141,18 @@ class EditProfileWindow(bui.Window):
 
         # Look for existing character choice or pick random one otherwise.
         try:
-            icon_index = self._spazzes.index(profile['character'])
+            icon_index = self._sillyzes.index(profile['character'])
         except Exception:
-            # Let's set the default icon to spaz for our first profile; after
+            # Let's set the default icon to silly for our first profile; after
             # that we go random.
             # (SCRATCH THAT.. we now hard-code account-profiles to start with
-            # spaz which has a similar effect)
+            # silly which has a similar effect)
             # try: p_len = len(bui.app.config['Player Profiles'])
             # except Exception: p_len = 0
-            # if p_len == 0: icon_index = self._spazzes.index('Spaz')
+            # if p_len == 0: icon_index = self._sillyzes.index('Silly')
             # else:
             random.seed()
-            icon_index = random.randrange(len(self._spazzes))
+            icon_index = random.randrange(len(self._sillyzes))
             assigned_random_char = True
         self._icon_index = icon_index
         bui.buttonwidget(edit=save_button, on_activate_call=self.save)
@@ -167,13 +167,13 @@ class EditProfileWindow(bui.Window):
         # colors/highlights associated with it and assign them if so.
         if assigned_random_char:
             assert bui.app.classic is not None
-            clr = bui.app.classic.spaz_appearances[
-                self._spazzes[icon_index]
+            clr = bui.app.classic.silly_appearances[
+                self._sillyzes[icon_index]
             ].default_color
             if clr is not None:
                 self._color = clr
-            highlight = bui.app.classic.spaz_appearances[
-                self._spazzes[icon_index]
+            highlight = bui.app.classic.silly_appearances[
+                self._sillyzes[icon_index]
             ].default_highlight
             if highlight is not None:
                 self._highlight = highlight
@@ -592,21 +592,21 @@ class EditProfileWindow(bui.Window):
 
     def refresh_characters(self) -> None:
         """Refresh available characters/icons."""
-        from bascenev1lib.actor import spazappearance
+        from sillies.silly import silly_appearance
 
         assert bui.app.classic is not None
 
-        self._spazzes = spazappearance.get_appearances()
-        self._spazzes.sort()
+        self._sillyzes = silly_appearance.get_appearances()
+        self._sillyzes.sort()
         self._icon_textures = [
-            bui.gettexture(bui.app.classic.spaz_appearances[s].icon_texture)
-            for s in self._spazzes
+            bui.gettexture(bui.app.classic.silly_appearances[s].icon_texture)
+            for s in self._sillyzes
         ]
         self._icon_tint_textures = [
             bui.gettexture(
-                bui.app.classic.spaz_appearances[s].icon_mask_texture
+                bui.app.classic.silly_appearances[s].icon_mask_texture
             )
-            for s in self._spazzes
+            for s in self._sillyzes
         ]
 
     def on_icon_picker_pick(self, icon: str) -> None:
@@ -622,7 +622,7 @@ class EditProfileWindow(bui.Window):
         # The player could have bought a new one while the picker was up.
         self.refresh_characters()
         self._icon_index = (
-            self._spazzes.index(character) if character in self._spazzes else 0
+            self._sillyzes.index(character) if character in self._sillyzes else 0
         )
         self._update_character()
 
@@ -632,7 +632,7 @@ class EditProfileWindow(bui.Window):
         characterpicker.CharacterPicker(
             parent=self._root_widget,
             position=self._character_button.get_screen_space_center(),
-            selected_character=self._spazzes[self._icon_index],
+            selected_character=self._sillyzes[self._icon_index],
             delegate=self,
             tint_color=self._color,
             tint2_color=self._highlight,
@@ -757,7 +757,7 @@ class EditProfileWindow(bui.Window):
             bui.textwidget(edit=self._clipped_name_text, text='')
 
     def _update_character(self, change: int = 0) -> None:
-        self._icon_index = (self._icon_index + change) % len(self._spazzes)
+        self._icon_index = (self._icon_index + change) % len(self._sillyzes)
         if self._character_button:
             bui.buttonwidget(
                 edit=self._character_button,
@@ -829,7 +829,7 @@ class EditProfileWindow(bui.Window):
                 'type': 'ADD_PLAYER_PROFILE',
                 'name': new_name,
                 'profile': {
-                    'character': self._spazzes[self._icon_index],
+                    'character': self._sillyzes[self._icon_index],
                     'color': list(self._color),
                     'global': self._global,
                     'icon': self._icon,

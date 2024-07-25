@@ -21,7 +21,7 @@ from typing import TYPE_CHECKING, override
 
 import bascenev1 as bs
 
-from bascenev1lib.actor.spaz import Spaz
+from sillies.silly.silly import Silly
 
 if TYPE_CHECKING:
     from typing import Any, Callable, Sequence
@@ -46,7 +46,7 @@ class ButtonPress:
         self._release_delay = release_delay
 
     def run(self, a: TutorialActivity) -> None:
-        s = a.current_spaz
+        s = a.current_silly
         assert s is not None
         img: bs.Node | None
         release_call: Callable[[], None] | None
@@ -128,7 +128,7 @@ class ButtonRelease:
         self._delay = delay
 
     def run(self, a: TutorialActivity) -> None:
-        s = a.current_spaz
+        s = a.current_silly
         assert s is not None
         call: Callable[[], None] | None
         img: bs.Node | None
@@ -191,7 +191,7 @@ class TutorialActivity(bs.Activity[Player, Team]):
         if settings is None:
             settings = {}
         super().__init__(settings)
-        self.current_spaz: Spaz | None = None
+        self.current_silly: Silly | None = None
         self._benchmark_type = getattr(bs.getsession(), 'benchmark_type', None)
         self.last_start_time: int | None = None
         self.cycle_times: list[int] = []
@@ -228,7 +228,7 @@ class TutorialActivity(bs.Activity[Player, Team]):
         self.bomb_image_color = (1.0, 1.0, 1.0)
         self.pickup_image_color = (1.0, 1.0, 1.0)
         self.control_ui_nodes: list[bs.Node] = []
-        self.spazzes: dict[int, Spaz] = {}
+        self.sillyzes: dict[int, Silly] = {}
         self.jump_image_color = (1.0, 1.0, 1.0)
         self._entries: deque[Any] = deque()
         self._read_entries_timer: bs.Timer | None = None
@@ -473,10 +473,10 @@ class TutorialActivity(bs.Activity[Player, Team]):
 
                     assert a.text
                     a.text.text = ''
-                    for spaz in list(a.spazzes.values()):
-                        spaz.handlemessage(bs.DieMessage(immediate=True))
-                    a.spazzes = {}
-                    a.current_spaz = None
+                    for silly in list(a.sillyzes.values()):
+                        silly.handlemessage(bs.DieMessage(immediate=True))
+                    a.sillyzes = {}
+                    a.current_silly = None
                     for n in a.control_ui_nodes:
                         n.opacity = 0.0
                     a.set_stick_image_position(0, 0)
@@ -496,21 +496,21 @@ class TutorialActivity(bs.Activity[Player, Team]):
 
                 def run(self, a: TutorialActivity) -> None:
                     # pylint: disable=protected-access
-                    assert a.current_spaz is not None
+                    assert a.current_silly is not None
                     # noinspection PyProtectedMember
-                    a.current_spaz._gloves_wear_off()
+                    a.current_silly._gloves_wear_off()
 
-            class KillSpaz:
+            class KillSilly:
                 def __init__(self, num: int, explode: bool = False):
                     self._num = num
                     self._explode = explode
 
                 def run(self, a: TutorialActivity) -> None:
                     if self._explode:
-                        a.spazzes[self._num].shatter()
-                    del a.spazzes[self._num]
+                        a.sillyzes[self._num].shatter()
+                    del a.sillyzes[self._num]
 
-            class SpawnSpaz:
+            class SpawnSilly:
                 def __init__(
                     self,
                     num: int,
@@ -532,11 +532,11 @@ class TutorialActivity(bs.Activity[Player, Team]):
                     self._angle = angle
 
                 def run(self, a: TutorialActivity) -> None:
-                    # if they gave a 'relative to' spaz, position is relative
+                    # if they gave a 'relative to' silly, position is relative
                     # to them
                     pos: Sequence[float]
                     if self._relative_to is not None:
-                        snode = a.spazzes[self._relative_to].node
+                        snode = a.sillyzes[self._relative_to].node
                         assert snode
                         their_pos = snode.position
                         pos = (
@@ -547,19 +547,19 @@ class TutorialActivity(bs.Activity[Player, Team]):
                     else:
                         pos = self._position
 
-                    # if there's already a spaz at this spot, insta-kill it
-                    if self._num in a.spazzes:
-                        a.spazzes[self._num].handlemessage(
+                    # if there's already a silly at this spot, insta-kill it
+                    if self._num in a.sillyzes:
+                        a.sillyzes[self._num].handlemessage(
                             bs.DieMessage(immediate=True)
                         )
 
-                    s = a.spazzes[self._num] = Spaz(
+                    s = a.sillyzes[self._num] = Silly(
                         color=self._color,
                         start_invincible=self._flash,
                         demo_mode=True,
                     )
 
-                    # FIXME: Should extend spaz to support Lstr names.
+                    # FIXME: Should extend silly to support Lstr names.
                     assert s.node
                     if isinstance(self._name, bs.Lstr):
                         s.node.name = self._name.evaluate()
@@ -568,7 +568,7 @@ class TutorialActivity(bs.Activity[Player, Team]):
                     s.node.name_color = self._color
                     s.handlemessage(bs.StandMessage(pos, self._angle))
                     if self._make_current:
-                        a.current_spaz = s
+                        a.current_silly = s
                     if self._flash:
                         a.spawn_sound.play(position=pos)
 
@@ -585,11 +585,11 @@ class TutorialActivity(bs.Activity[Player, Team]):
                     self._relative_to = relative_to
 
                 def run(self, a: TutorialActivity) -> None:
-                    # If they gave a 'relative to' spaz, position is relative
+                    # If they gave a 'relative to' silly, position is relative
                     # to them.
                     pos: Sequence[float]
                     if self._relative_to is not None:
-                        snode = a.spazzes[self._relative_to].node
+                        snode = a.sillyzes[self._relative_to].node
                         assert snode
                         their_pos = snode.position
                         pos = (
@@ -647,7 +647,7 @@ class TutorialActivity(bs.Activity[Player, Team]):
                     self._y = float(y)
 
                 def run(self, a: TutorialActivity) -> None:
-                    s = a.current_spaz
+                    s = a.current_silly
                     assert s
                     # FIXME: Game should take floats for this.
                     x_clamped = self._x
@@ -661,7 +661,7 @@ class TutorialActivity(bs.Activity[Player, Team]):
                     self._x = float(x)
 
                 def run(self, a: TutorialActivity) -> None:
-                    s = a.current_spaz
+                    s = a.current_silly
                     assert s
                     # FIXME: Game should take floats for this.
                     x_clamped = self._x
@@ -675,7 +675,7 @@ class TutorialActivity(bs.Activity[Player, Team]):
                     self._y = float(y)
 
                 def run(self, a: TutorialActivity) -> None:
-                    s = a.current_spaz
+                    s = a.current_silly
                     assert s
                     # FIXME: Game should take floats for this.
                     y_clamped = self._y
@@ -796,14 +796,14 @@ class TutorialActivity(bs.Activity[Player, Team]):
                     a.text.text = self.text
 
             class PrintPos:
-                def __init__(self, spaz_num: int | None = None):
-                    self._spaz_num = spaz_num
+                def __init__(self, silly_num: int | None = None):
+                    self._silly_num = silly_num
 
                 def run(self, a: TutorialActivity) -> None:
-                    if self._spaz_num is None:
-                        s = a.current_spaz
+                    if self._silly_num is None:
+                        s = a.current_silly
                     else:
-                        s = a.spazzes[self._spaz_num]
+                        s = a.sillyzes[self._silly_num]
                     assert s and s.node
                     t = list(s.node.position)
                     print('RestorePos(' + str((t[0], t[1] - 1.0, t[2])) + '),')
@@ -813,7 +813,7 @@ class TutorialActivity(bs.Activity[Player, Team]):
                     self._pos = pos
 
                 def run(self, a: TutorialActivity) -> None:
-                    s = a.current_spaz
+                    s = a.current_silly
                     assert s
                     s.handlemessage(bs.StandMessage(self._pos, 0))
 
@@ -821,18 +821,18 @@ class TutorialActivity(bs.Activity[Player, Team]):
                 def __init__(
                     self,
                     celebrate_type: str = 'both',
-                    spaz_num: int | None = None,
+                    silly_num: int | None = None,
                     duration: int = 1000,
                 ):
-                    self._spaz_num = spaz_num
+                    self._silly_num = silly_num
                     self._celebrate_type = celebrate_type
                     self._duration = duration
 
                 def run(self, a: TutorialActivity) -> None:
-                    if self._spaz_num is None:
-                        s = a.current_spaz
+                    if self._silly_num is None:
+                        s = a.current_silly
                     else:
-                        s = a.spazzes[self._spaz_num]
+                        s = a.sillyzes[self._silly_num]
                     assert s and s.node
                     if self._celebrate_type == 'right':
                         s.node.handlemessage('celebrate_r', self._duration)
@@ -848,7 +848,7 @@ class TutorialActivity(bs.Activity[Player, Team]):
             self._entries = deque(
                 [
                     Reset(),
-                    SpawnSpaz(0, (0, 5.5, -3.0), make_current=True),
+                    SpawnSilly(0, (0, 5.5, -3.0), make_current=True),
                     DelayOld(1000),
                     AnalyticsScreen('Tutorial Section 1'),
                     Text(
@@ -1268,13 +1268,13 @@ class TutorialActivity(bs.Activity[Player, Team]):
                     DelayOld(100),
                     Move(0, 0),
                     DelayOld(500),
-                    SpawnSpaz(
+                    SpawnSilly(
                         0,
                         (-0.09249162673950195, 4.337906360626221, -2.3),
                         make_current=True,
                         flash=False,
                     ),
-                    SpawnSpaz(
+                    SpawnSilly(
                         1,
                         (-3.1, 4.3, -2.0),
                         make_current=False,
@@ -1316,7 +1316,7 @@ class TutorialActivity(bs.Activity[Player, Team]):
                         )
                     ),  # see that didn't hurt fred
                     DelayOld(2000),
-                    Celebrate('right', spaz_num=1),
+                    Celebrate('right', silly_num=1),
                     DelayOld(1400),
                     Text(
                         bs.Lstr(resource=self._r + '.phrase08Text')
@@ -1528,10 +1528,10 @@ class TutorialActivity(bs.Activity[Player, Team]):
                         bs.Lstr(resource=self._r + '.phrase10Text')
                     ),  # running also helps
                     DelayOld(100),
-                    SpawnSpaz(
+                    SpawnSilly(
                         0, (-3.2, 4.3, -4.4), make_current=True, flash=False
                     ),
-                    SpawnSpaz(
+                    SpawnSilly(
                         1,
                         (3.3, 4.2, -5.8),
                         make_current=False,
@@ -1800,7 +1800,7 @@ class TutorialActivity(bs.Activity[Player, Team]):
                         bs.Lstr(resource=self._r + '.phrase12Text')
                     ),  # for extra-awesome punches,...
                     DelayOld(200),
-                    SpawnSpaz(
+                    SpawnSilly(
                         0,
                         (
                             2.368781805038452,
@@ -1810,7 +1810,7 @@ class TutorialActivity(bs.Activity[Player, Team]):
                         make_current=True,
                         flash=False,
                     ),
-                    SpawnSpaz(
+                    SpawnSilly(
                         1,
                         (-3.2, 4.3, -4.5),
                         make_current=False,
@@ -1944,7 +1944,7 @@ class TutorialActivity(bs.Activity[Player, Team]):
                     DelayOld(20),
                     MoveUD(-0.811762),
                     MoveUD(-1),
-                    KillSpaz(1, explode=True),
+                    KillSilly(1, explode=True),
                     DelayOld(10),
                     RunRelease(),
                     PunchRelease(),
@@ -2042,14 +2042,14 @@ class TutorialActivity(bs.Activity[Player, Team]):
                             ],
                         )
                     ),  # you can pick up and throw things such as chuck here
-                    SpawnSpaz(
+                    SpawnSilly(
                         0,
                         (-4.0, 4.3, -2.5),
                         make_current=True,
                         flash=False,
                         angle=90,
                     ),
-                    SpawnSpaz(
+                    SpawnSilly(
                         1,
                         (5, 0, -1.0),
                         relative_to=0,
@@ -2074,7 +2074,7 @@ class TutorialActivity(bs.Activity[Player, Team]):
                     DelayOld(800),
                     Move(0, 0),
                     DelayOld(800),
-                    SpawnSpaz(
+                    SpawnSilly(
                         0,
                         (1.5, 4.3, -4.0),
                         make_current=True,
@@ -2310,14 +2310,14 @@ class TutorialActivity(bs.Activity[Player, Team]):
                     Move(0, -0.1),
                     DelayOld(100),
                     Move(0, 0),
-                    SpawnSpaz(
+                    SpawnSilly(
                         0,
                         (-0.7, 4.3, -3.9),
                         make_current=True,
                         flash=False,
                         angle=-30,
                     ),
-                    SpawnSpaz(
+                    SpawnSilly(
                         1,
                         (6.5, 0, -0.75),
                         relative_to=0,
@@ -2366,7 +2366,7 @@ class TutorialActivity(bs.Activity[Player, Team]):
                     ),  # hooray nicely cooked
                     Celebrate(),
                     DelayOld(2000),
-                    KillSpaz(1),
+                    KillSilly(1),
                     Text(''),
                     Move(0.5, -0.5),
                     DelayOld(1000),

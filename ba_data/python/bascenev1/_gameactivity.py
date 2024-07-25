@@ -22,7 +22,7 @@ from bascenev1 import _music
 if TYPE_CHECKING:
     from typing import Any, Callable, Sequence
 
-    from bascenev1lib.actor.playerspaz import PlayerSpaz
+    from bascenev1lib.actor.playersilly import PlayerSilly
     from bascenev1lib.actor.bomb import TNTSpawner
     import bascenev1
 
@@ -549,7 +549,7 @@ class GameActivity(Activity[PlayerT, TeamT]):
     def handlemessage(self, msg: Any) -> Any:
         if isinstance(msg, PlayerDiedMessage):
             # pylint: disable=cyclic-import
-            from bascenev1lib.actor.spaz import Spaz
+            from sillies.silly.silly import Silly
 
             player = msg.getplayer(self.playertype)
             killer = msg.getkillerplayer(self.playertype)
@@ -560,10 +560,10 @@ class GameActivity(Activity[PlayerT, TeamT]):
             )
 
             # Award the killer points if he's on a different team.
-            # FIXME: This should not be linked to Spaz actors.
+            # FIXME: This should not be linked to Silly actors.
             # (should move get_death_points to Actor or make it a message)
             if killer and killer.team is not player.team:
-                assert isinstance(killer.actor, Spaz)
+                assert isinstance(killer.actor, Silly)
                 pts, importance = killer.actor.get_death_points(msg.how)
                 if not self.has_ended():
                     self.stats.player_scored(
@@ -942,44 +942,44 @@ class GameActivity(Activity[PlayerT, TeamT]):
     def spawn_player(self, player: PlayerT) -> bascenev1.Actor:
         """Spawn *something* for the provided bascenev1.Player.
 
-        The default implementation simply calls spawn_player_spaz().
+        The default implementation simply calls spawn_player_silly().
         """
         assert player  # Dead references should never be passed as args.
 
-        return self.spawn_player_spaz(player)
+        return self.spawn_player_silly(player)
 
-    def spawn_player_spaz(
+    def spawn_player_silly(
         self,
         player: PlayerT,
         position: Sequence[float] = (0, 0, 0),
         angle: float | None = None,
-    ) -> PlayerSpaz:
-        """Create and wire up a bascenev1.PlayerSpaz for the provided Player."""
+    ) -> PlayerSilly:
+        """Create and wire up a bascenev1.PlayerSilly for the provided Player."""
         # pylint: disable=too-many-locals
         # pylint: disable=cyclic-import
         from bascenev1._gameutils import animate
         from bascenev1._coopsession import CoopSession
-        from bascenev1lib.actor.playerspaz import PlayerSpaz
+        from bascenev1lib.actor.playersilly import PlayerSilly
 
         name = player.getname()
         color = player.color
         highlight = player.highlight
 
-        playerspaztype = getattr(player, 'playerspaztype', PlayerSpaz)
-        if not issubclass(playerspaztype, PlayerSpaz):
-            playerspaztype = PlayerSpaz
+        playersillytype = getattr(player, 'playersillytype', PlayerSilly)
+        if not issubclass(playersillytype, PlayerSilly):
+            playersillytype = PlayerSilly
 
         light_color = babase.normalized_color(color)
         display_color = babase.safecolor(color, target_intensity=0.75)
-        spaz = playerspaztype(
+        silly = playersillytype(
             color=color,
             highlight=highlight,
             character=player.character,
             player=player,
         )
 
-        player.actor = spaz
-        assert spaz.node
+        player.actor = silly
+        assert silly.node
 
         # If this is co-op and we're on Courtyard or Runaround, add the
         # material that allows us to collide with the player-walls.
@@ -989,27 +989,27 @@ class GameActivity(Activity[PlayerT, TeamT]):
             'Tower D',
         ]:
             mat = self.map.preloaddata['collide_with_wall_material']
-            assert isinstance(spaz.node.materials, tuple)
-            assert isinstance(spaz.node.roller_materials, tuple)
-            spaz.node.materials += (mat,)
-            spaz.node.roller_materials += (mat,)
+            assert isinstance(silly.node.materials, tuple)
+            assert isinstance(silly.node.roller_materials, tuple)
+            silly.node.materials += (mat,)
+            silly.node.roller_materials += (mat,)
 
-        spaz.node.name = name
-        spaz.node.name_color = display_color
-        spaz.connect_controls_to_player()
+        silly.node.name = name
+        silly.node.name_color = display_color
+        silly.connect_controls_to_player()
 
         # Move to the stand position and add a flash of light.
-        spaz.handlemessage(
+        silly.handlemessage(
             StandMessage(
                 position, angle if angle is not None else random.uniform(0, 360)
             )
         )
-        self._spawn_sound.play(1, position=spaz.node.position)
+        self._spawn_sound.play(1, position=silly.node.position)
         light = _bascenev1.newnode('light', attrs={'color': light_color})
-        spaz.node.connectattr('position', light, 'position')
+        silly.node.connectattr('position', light, 'position')
         animate(light, 'intensity', {0: 0, 0.25: 1, 0.5: 0})
         _bascenev1.timer(0.5, light.delete)
-        return spaz
+        return silly
 
     def setup_standard_powerup_drops(self, enable_tnt: bool = True) -> None:
         """Create standard powerup drops for the current map."""

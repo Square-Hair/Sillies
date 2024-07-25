@@ -420,7 +420,7 @@ class Chooser:
             # so no exploit opportunities)
             if (
                 character not in self._character_names
-                and character in babase.app.classic.spaz_appearances
+                and character in babase.app.classic.silly_appearances
             ):
                 self._character_names.append(character)
             self._character_index = self._character_names.index(character)
@@ -447,7 +447,7 @@ class Chooser:
         if is_remote:
             # TODO: Pull this from the remote player.
             # (but make sure to filter it to the ones we've got).
-            self._character_names = ['Spaz']
+            self._character_names = ['Silly']
         else:
             self._character_names = self.lobby.character_names_local_unlocked
 
@@ -468,9 +468,9 @@ class Chooser:
         for profile in list(self._profiles.items()):
             if (
                 profile[1].get('character', '')
-                not in app.classic.spaz_appearances
+                not in app.classic.silly_appearances
             ):
-                profile[1]['character'] = 'Spaz'
+                profile[1]['character'] = 'Silly'
 
         # Add in a random one so we're ok even if there's no user profiles.
         self._profiles['_random'] = {}
@@ -894,16 +894,16 @@ class Chooser:
             return
 
         try:
-            tex_name = babase.app.classic.spaz_appearances[
+            tex_name = babase.app.classic.silly_appearances[
                 self._character_names[self._character_index]
             ].icon_texture
-            tint_tex_name = babase.app.classic.spaz_appearances[
+            tint_tex_name = babase.app.classic.silly_appearances[
                 self._character_names[self._character_index]
             ].icon_mask_texture
         except Exception:
             logging.exception('Error updating char icon list')
-            tex_name = 'neoSpazIcon'
-            tint_tex_name = 'neoSpazIconColorMask'
+            tex_name = 'neoSillyIcon'
+            tint_tex_name = 'neoSillyIconColorMask'
 
         tex = _bascenev1.gettexture(tex_name)
         tint_tex = _bascenev1.gettexture(tint_tex_name)
@@ -1017,7 +1017,7 @@ class Lobby:
     def reload_profiles(self) -> None:
         """Reload available player profiles."""
         # pylint: disable=cyclic-import
-        from bascenev1lib.actor.spazappearance import get_appearances
+        from sillies.silly.silly_appearance import get_appearances
 
         assert babase.app.classic is not None
 

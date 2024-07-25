@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, override
 
 import bascenev1 as bs
 
-from bascenev1lib.actor.playerspaz import PlayerSpaz
+from bascenev1lib.actor.playersilly import PlayerSilly
 from bascenev1lib.actor.scoreboard import Scoreboard
 from bascenev1lib.actor.powerupbox import PowerupBoxFactory
 from bascenev1lib.gameutils import SharedObjects
@@ -297,7 +297,7 @@ class HockeyGame(bs.TeamGameActivity[Player, Team]):
         try:
             puck = collision.sourcenode.getdelegate(Puck, True)
             player = collision.opposingnode.getdelegate(
-                PlayerSpaz, True
+                PlayerSilly, True
             ).getplayer(Player, True)
         except bs.NotFoundError:
             return

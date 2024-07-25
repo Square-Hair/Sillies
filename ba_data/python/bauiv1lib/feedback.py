@@ -43,7 +43,7 @@ def ask_for_rating() -> bui.Widget | None:
         parent=dlg,
         position=(width / 2 - 100, v + 10),
         size=(200, 200),
-        texture=bui.gettexture('cuteSpaz'),
+        texture=bui.gettexture('cuteSilly'),
     )
     bui.textwidget(
         parent=dlg,

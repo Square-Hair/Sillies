@@ -14,7 +14,7 @@ import bascenev1 as bs
 
 from bascenev1lib.actor.flag import Flag
 from bascenev1lib.actor.scoreboard import Scoreboard
-from bascenev1lib.actor.playerspaz import PlayerSpaz
+from bascenev1lib.actor.playersilly import PlayerSilly
 from bascenev1lib.gameutils import SharedObjects
 from bascenev1lib.actor.respawnicon import RespawnIcon
 
@@ -255,7 +255,7 @@ class ConquestGame(bs.TeamGameActivity[Player, Team]):
         try:
             flag = collision.sourcenode.getdelegate(ConquestFlag, True)
             player = collision.opposingnode.getdelegate(
-                PlayerSpaz, True
+                PlayerSilly, True
             ).getplayer(Player, True)
         except bs.NotFoundError:
             return
@@ -300,7 +300,7 @@ class ConquestGame(bs.TeamGameActivity[Player, Team]):
     @override
     def spawn_player(self, player: Player) -> bs.Actor:
         # We spawn players at different places based on what flags are held.
-        return self.spawn_player_spaz(
+        return self.spawn_player_silly(
             player, self._get_player_spawn_position(player)
         )
 

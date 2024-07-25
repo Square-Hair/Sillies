@@ -206,13 +206,13 @@ class AccountV1Subsystem:
             'Player Profiles' not in config
             or '__account__' not in config['Player Profiles']
         ):
-            # Create a spaz with a nice default purply color.
+            # Create a silly with a nice default purply color.
             plus.add_v1_account_transaction(
                 {
                     'type': 'ADD_PLAYER_PROFILE',
                     'name': '__account__',
                     'profile': {
-                        'character': 'Spaz',
+                        'character': 'Silly',
                         'color': [0.5, 0.25, 1.0],
                         'highlight': [0.5, 0.25, 1.0],
                     },

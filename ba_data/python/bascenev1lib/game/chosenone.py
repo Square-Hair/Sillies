@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, override
 import bascenev1 as bs
 
 from bascenev1lib.actor.flag import Flag
-from bascenev1lib.actor.playerspaz import PlayerSpaz
+from bascenev1lib.actor.playersilly import PlayerSilly
 from bascenev1lib.actor.scoreboard import Scoreboard
 from bascenev1lib.gameutils import SharedObjects
 
@@ -193,12 +193,12 @@ class ChosenOneGame(bs.TeamGameActivity[Player, Team]):
 
         # Attempt to get a Actor that we hit.
         try:
-            spaz = bs.getcollision().opposingnode.getdelegate(PlayerSpaz, True)
-            player = spaz.getplayer(Player, True)
+            silly = bs.getcollision().opposingnode.getdelegate(PlayerSilly, True)
+            player = silly.getplayer(Player, True)
         except bs.NotFoundError:
             return
 
-        if spaz.is_alive():
+        if silly.is_alive():
             self._set_chosen_one_player(player)
 
     def _flash_flag_spawn(self) -> None:
@@ -234,7 +234,7 @@ class ChosenOneGame(bs.TeamGameActivity[Player, Team]):
 
                 # Show the count over their head
                 if scoring_team.time_remaining > 0:
-                    if isinstance(player.actor, PlayerSpaz) and player.actor:
+                    if isinstance(player.actor, PlayerSilly) and player.actor:
                         player.actor.set_score_text(
                             str(scoring_team.time_remaining)
                         )
@@ -338,7 +338,7 @@ class ChosenOneGame(bs.TeamGameActivity[Player, Team]):
                     {0: 1.0, 0.2: 0.4, 0.4: 1.0},
                     loop=True,
                 )
-                assert isinstance(player.actor, PlayerSpaz)
+                assert isinstance(player.actor, PlayerSilly)
                 player.actor.node.connectattr(
                     'position', light.node, 'position'
                 )

@@ -24,10 +24,10 @@ from bascenev1lib.actor.scoreboard import Scoreboard
 from bascenev1lib.actor.respawnicon import RespawnIcon
 from bascenev1lib.actor.powerupbox import PowerupBox, PowerupBoxFactory
 from bascenev1lib.gameutils import SharedObjects
-from bascenev1lib.actor.spazbot import (
-    SpazBotSet,
-    SpazBot,
-    SpazBotDiedMessage,
+from sillies.silly.sillybot import (
+    SillyBotSet,
+    SillyBot,
+    SillyBotDiedMessage,
     BomberBot,
     BrawlerBot,
     TriggerBot,
@@ -73,7 +73,7 @@ class Spawn:
     """Defines a bot spawn event."""
 
     # noinspection PyUnresolvedReferences
-    type: type[SpazBot]
+    type: type[SillyBot]
     path: int = 0
     point: Point | None = None
 
@@ -117,7 +117,7 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
     default_music = bs.MusicType.MARCHING
 
     # How fast our various bot types walk.
-    _bot_speed_map: dict[type[SpazBot], float] = {
+    _bot_speed_map: dict[type[SillyBot], float] = {
         BomberBot: 0.48,
         BomberBotPro: 0.48,
         BomberBotProShielded: 0.48,
@@ -181,7 +181,7 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
         self._exclude_powerups: list[str] | None = None
         self._have_tnt: bool | None = None
         self._waves: list[Wave] | None = None
-        self._bots = SpazBotSet()
+        self._bots = SillyBotSet()
         self._tntspawner: TNTSpawner | None = None
         self._lives_bg: bs.NodeActor | None = None
         self._start_lives = 10
@@ -530,19 +530,19 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
         bs.timer(2.0, self._start_updating_waves)
 
     def _handle_reached_end(self) -> None:
-        spaz = bs.getcollision().opposingnode.getdelegate(SpazBot, True)
-        if not spaz.is_alive():
+        silly = bs.getcollision().opposingnode.getdelegate(SillyBot, True)
+        if not silly.is_alive():
             return  # Ignore bodies flying in.
 
         self._flawless = False
-        pos = spaz.node.position
+        pos = silly.node.position
         self._bad_guy_score_sound.play(position=pos)
         light = bs.newnode(
             'light', attrs={'position': pos, 'radius': 0.5, 'color': (1, 0, 0)}
         )
         bs.animate(light, 'intensity', {0.0: 0, 0.1: 1, 0.5: 0}, loop=False)
         bs.timer(1.0, light.delete)
-        spaz.handlemessage(
+        silly.handlemessage(
             bs.DieMessage(immediate=True, how=bs.DeathType.REACHED_GOAL)
         )
 
@@ -628,13 +628,13 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
             self._spawn_center[1],
             self._spawn_center[2] + random.uniform(-1.5, 1.5),
         )
-        spaz = self.spawn_player_spaz(player, position=pos)
+        silly = self.spawn_player_silly(player, position=pos)
         if self._preset in {Preset.PRO_EASY, Preset.UBER_EASY}:
-            spaz.impact_scale = 0.25
+            silly.impact_scale = 0.25
 
         # Add the material that causes us to hit the player-wall.
-        spaz.pick_up_powerup_callback = self._on_player_picked_up_powerup
-        return spaz
+        silly.pick_up_powerup_callback = self._on_player_picked_up_powerup
+        return silly
 
     def _on_player_picked_up_powerup(self, player: bs.Actor) -> None:
         del player  # Unused.
@@ -920,32 +920,32 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
             target_points = (level + 1) * 8.0
             group_count = random.randint(1, 3)
             entries: list[Spawn | Spacing | None] = []
-            spaz_types: list[tuple[type[SpazBot], float]] = []
+            silly_types: list[tuple[type[SillyBot], float]] = []
             if level < 6:
-                spaz_types += [(BomberBot, 5.0)]
+                silly_types += [(BomberBot, 5.0)]
             if level < 10:
-                spaz_types += [(BrawlerBot, 5.0)]
+                silly_types += [(BrawlerBot, 5.0)]
             if level < 15:
-                spaz_types += [(TriggerBot, 6.0)]
+                silly_types += [(TriggerBot, 6.0)]
             if level > 5:
-                spaz_types += [(TriggerBotPro, 7.5)] * (1 + (level - 5) // 7)
+                silly_types += [(TriggerBotPro, 7.5)] * (1 + (level - 5) // 7)
             if level > 2:
-                spaz_types += [(BomberBotProShielded, 8.0)] * (
+                silly_types += [(BomberBotProShielded, 8.0)] * (
                     1 + (level - 2) // 6
                 )
             if level > 6:
-                spaz_types += [(TriggerBotProShielded, 12.0)] * (
+                silly_types += [(TriggerBotProShielded, 12.0)] * (
                     1 + (level - 6) // 5
                 )
             if level > 1:
-                spaz_types += [(ChargerBot, 10.0)] * (1 + (level - 1) // 4)
+                silly_types += [(ChargerBot, 10.0)] * (1 + (level - 1) // 4)
             if level > 7:
-                spaz_types += [(ChargerBotProShielded, 15.0)] * (
+                silly_types += [(ChargerBotProShielded, 15.0)] * (
                     1 + (level - 7) // 3
                 )
 
             # Bot type, their effect on target points.
-            defender_types: list[tuple[type[SpazBot], float]] = [
+            defender_types: list[tuple[type[SillyBot], float]] = [
                 (BomberBot, 0.9),
                 (BrawlerBot, 0.9),
                 (TriggerBot, 0.85),
@@ -1011,7 +1011,7 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
                     this_target_point_s *= 0.7
 
                 def _add_defender(
-                    defender_type: tuple[type[SpazBot], float], pnt: Point
+                    defender_type: tuple[type[SillyBot], float], pnt: Point
                 ) -> tuple[float, Spawn]:
                     # This is ok because we call it immediately.
                     # pylint: disable=cell-var-from-loop
@@ -1041,9 +1041,9 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
                             defender_type2, Point.BOTTOM_RIGHT
                         )
 
-                spaz_type = spaz_types[random.randrange(len(spaz_types))]
+                silly_type = silly_types[random.randrange(len(silly_types))]
                 member_count = max(
-                    1, int(round(this_target_point_s / spaz_type[1]))
+                    1, int(round(this_target_point_s / silly_type[1]))
                 )
                 for i, _member in enumerate(range(member_count)):
                     if path == 4:
@@ -1054,7 +1054,7 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
                         this_path = random.randint(1, 3)  # Random.
                     else:
                         this_path = path
-                    entries.append(Spawn(spaz_type[0], path=this_path))
+                    entries.append(Spawn(silly_type[0], path=this_path))
                     if spacing != 0.0:
                         entries.append(Spacing(duration=spacing))
 
@@ -1195,20 +1195,20 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
             )
         )
 
-    def _on_bot_spawn(self, path: int, spaz: SpazBot) -> None:
+    def _on_bot_spawn(self, path: int, silly: SillyBot) -> None:
         # Add our custom update callback and set some info for this bot.
-        spaz_type = type(spaz)
-        assert spaz is not None
-        spaz.update_callback = self._update_bot
+        silly_type = type(silly)
+        assert silly is not None
+        silly.update_callback = self._update_bot
 
-        # Tack some custom attrs onto the spaz.
-        setattr(spaz, 'r_walk_row', path)
-        setattr(spaz, 'r_walk_speed', self._get_bot_speed(spaz_type))
+        # Tack some custom attrs onto the silly.
+        setattr(silly, 'r_walk_row', path)
+        setattr(silly, 'r_walk_speed', self._get_bot_speed(silly_type))
 
     def add_bot_at_point(
         self,
         point: Point,
-        spaztype: type[SpazBot],
+        sillytype: type[SillyBot],
         path: int,
         spawn_time: float = 0.1,
     ) -> None:
@@ -1219,7 +1219,7 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
             return
         pos = self.map.defs.points[point.value][:3]
         self._bots.spawn_bot(
-            spaztype,
+            sillytype,
             pos=pos,
             spawn_time=spawn_time,
             on_spawn_call=bs.Call(self._on_bot_spawn, path),
@@ -1259,7 +1259,7 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
         assert self._scoreboard is not None
         self._scoreboard.set_team_value(self.teams[0], score, max_score=None)
 
-    def _update_bot(self, bot: SpazBot) -> bool:
+    def _update_bot(self, bot: SillyBot) -> bool:
         # Yup; that's a lot of return statements right there.
         # pylint: disable=too-many-return-statements
 
@@ -1352,18 +1352,18 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
             )
             player.respawn_icon = RespawnIcon(player, respawn_time)
 
-        elif isinstance(msg, SpazBotDiedMessage):
+        elif isinstance(msg, SillyBotDiedMessage):
             if msg.how is bs.DeathType.REACHED_GOAL:
                 return None
-            pts, importance = msg.spazbot.get_death_points(msg.how)
+            pts, importance = msg.sillybot.get_death_points(msg.how)
             if msg.killerplayer is not None:
                 target: Sequence[float] | None
                 try:
-                    assert msg.spazbot is not None
-                    assert msg.spazbot.node
-                    target = msg.spazbot.node.position
+                    assert msg.sillybot is not None
+                    assert msg.sillybot.node
+                    target = msg.sillybot.node.position
                 except Exception:
-                    logging.exception('Error getting SpazBotDied target.')
+                    logging.exception('Error getting SillyBotDied target.')
                     target = None
                 try:
                     if msg.killerplayer:
@@ -1382,7 +1382,7 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
                         )
                         dingsound.play(volume=0.6)
                 except Exception:
-                    logging.exception('Error on SpazBotDiedMessage.')
+                    logging.exception('Error on SillyBotDiedMessage.')
 
             # Normally we pull scores from the score-set, but if there's no
             # player lets be explicit.
@@ -1394,7 +1394,7 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
             return super().handlemessage(msg)
         return None
 
-    def _get_bot_speed(self, bot_type: type[SpazBot]) -> float:
+    def _get_bot_speed(self, bot_type: type[SillyBot]) -> float:
         speed = self._bot_speed_map.get(bot_type)
         if speed is None:
             raise TypeError(

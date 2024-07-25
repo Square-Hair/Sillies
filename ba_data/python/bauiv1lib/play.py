@@ -743,7 +743,7 @@ class PlayWindow(bui.Window):
             elif self._coop_button is not None and sel == self._coop_button:
                 sel_name = 'Co-op Games'
             elif sel == self._free_for_all_button:
-                sel_name = 'Free-for-All Games'
+                sel_name = 'Sillies Free-for-All Games'
             elif sel == self._back_button:
                 sel_name = 'Back'
             else:
@@ -761,7 +761,7 @@ class PlayWindow(bui.Window):
                 sel = self._teams_button
             elif sel_name == 'Co-op Games' and self._coop_button is not None:
                 sel = self._coop_button
-            elif sel_name == 'Free-for-All Games':
+            elif sel_name == 'Sillies Free-for-All Games':
                 sel = self._free_for_all_button
             elif sel_name == 'Back':
                 sel = self._back_button

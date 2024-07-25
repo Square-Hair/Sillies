@@ -358,7 +358,7 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
                             ).get_root_widget(),
                             from_window=False,  # Disable check here.
                         )
-                    elif main_menu_location == 'Free-for-All Game Select':
+                    elif main_menu_location == 'Sillies Free-for-All Game Select':
                         # pylint: disable=cyclic-import
                         from bauiv1lib.playlist.browser import (
                             PlaylistBrowserWindow,

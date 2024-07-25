@@ -33,9 +33,9 @@ class SharePlaylistImportWindow(SendInfoWindow):
             bui.getsound('error').play()
             return
 
-        if response['playlistType'] == 'Team Tournament':
+        if response['playlistType'] == 'Sillies Team Tournament':
             playlist_type_name = bui.Lstr(resource='playModes.teamsText')
-        elif response['playlistType'] == 'Free-for-All':
+        elif response['playlistType'] == 'Sillies Free-for-All':
             playlist_type_name = bui.Lstr(resource='playModes.freeForAllText')
         else:
             playlist_type_name = bui.Lstr(value=response['playlistType'])

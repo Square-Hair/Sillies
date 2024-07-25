@@ -417,13 +417,13 @@ class KioskWindow(bui.Window):
         self._save_state()
         if mode in ['epic', 'ctf', 'hockey']:
             appconfig = bui.app.config
-            if 'Team Tournament Playlists' not in appconfig:
-                appconfig['Team Tournament Playlists'] = {}
-            if 'Free-for-All Playlists' not in appconfig:
-                appconfig['Free-for-All Playlists'] = {}
+            if 'Sillies Team Tournament Playlists' not in appconfig:
+                appconfig['Sillies Team Tournament Playlists'] = {}
+            if 'Sillies Free-for-All Playlists' not in appconfig:
+                appconfig['Sillies Free-for-All Playlists'] = {}
             appconfig['Show Tutorial'] = False
             if mode == 'epic':
-                appconfig['Free-for-All Playlists']['Just Epic Elim'] = [
+                appconfig['Sillies Free-for-All Playlists']['Just Epic Elim'] = [
                     {
                         'settings': {
                             'Epic Mode': 1,
@@ -435,7 +435,7 @@ class KioskWindow(bui.Window):
                         'type': 'bs_elimination.EliminationGame',
                     }
                 ]
-                appconfig['Free-for-All Playlist Selection'] = 'Just Epic Elim'
+                appconfig['Sillies Free-for-All Playlist Selection'] = 'Just Epic Elim'
                 bui.fade_screen(
                     False,
                     endcall=bui.Call(
@@ -445,7 +445,7 @@ class KioskWindow(bui.Window):
                 )
             else:
                 if mode == 'ctf':
-                    appconfig['Team Tournament Playlists']['Just CTF'] = [
+                    appconfig['Sillies Team Tournament Playlists']['Just CTF'] = [
                         {
                             'settings': {
                                 'Epic Mode': False,
@@ -459,9 +459,9 @@ class KioskWindow(bui.Window):
                             'type': 'bs_capture_the_flag.CTFGame',
                         }
                     ]
-                    appconfig['Team Tournament Playlist Selection'] = 'Just CTF'
+                    appconfig['Sillies Team Tournament Playlist Selection'] = 'Just CTF'
                 else:
-                    appconfig['Team Tournament Playlists']['Just Hockey'] = [
+                    appconfig['Sillies Team Tournament Playlists']['Just Hockey'] = [
                         {
                             'settings': {
                                 'Respawn Times': 1.0,
@@ -472,7 +472,7 @@ class KioskWindow(bui.Window):
                             'type': 'bs_hockey.HockeyGame',
                         }
                     ]
-                    appconfig['Team Tournament Playlist Selection'] = (
+                    appconfig['Sillies Team Tournament Playlist Selection'] = (
                         'Just Hockey'
                     )
                 bui.fade_screen(

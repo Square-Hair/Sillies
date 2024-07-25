@@ -25,7 +25,7 @@ class PlaylistTypeVars:
             )
             self.get_default_list_call = get_default_teams_playlist
             self.session_type_name = 'bascenev1.DualTeamSession'
-            self.config_name = 'Team Tournament'
+            self.config_name = 'Sillies Team Tournament'
             self.window_title_name = bs.Lstr(
                 resource='playModes.teamsText', fallback_resource='teamsText'
             )
@@ -38,7 +38,7 @@ class PlaylistTypeVars:
             )
             self.get_default_list_call = get_default_free_for_all_playlist
             self.session_type_name = 'bascenev1.FreeForAllSession'
-            self.config_name = 'Free-for-All'
+            self.config_name = 'Sillies Free-for-All'
             self.window_title_name = bs.Lstr(
                 resource='playModes.freeForAllText',
                 fallback_resource='freeForAllText',

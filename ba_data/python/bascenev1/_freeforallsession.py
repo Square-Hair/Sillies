@@ -23,9 +23,9 @@ class FreeForAllSession(MultiTeamSession):
 
     use_teams = False
     use_team_colors = False
-    _playlist_selection_var = 'Free-for-All Playlist Selection'
-    _playlist_randomize_var = 'Free-for-All Playlist Randomize'
-    _playlists_var = 'Free-for-All Playlists'
+    _playlist_selection_var = 'Sillies Free-for-All Playlist Selection'
+    _playlist_randomize_var = 'Sillies Free-for-All Playlist Randomize'
+    _playlists_var = 'Sillies Free-for-All Playlists'
 
     def get_ffa_point_awards(self) -> dict[int, int]:
         """Return the number of points awarded for different rankings.

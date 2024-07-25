@@ -170,7 +170,7 @@ class MultiTeamSession(Session):
         if self.use_teams:
             val = babase.app.config.get('Team Game Max Players', 8)
         else:
-            val = babase.app.config.get('Free-for-All Max Players', 8)
+            val = babase.app.config.get('Sillies Free-for-All Max Players', 8)
         assert isinstance(val, int)
         return val
 

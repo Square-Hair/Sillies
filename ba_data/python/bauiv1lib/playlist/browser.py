@@ -42,7 +42,7 @@ class PlaylistBrowserWindow(bui.Window):
             bui.app.ui_v1.set_main_menu_location('Team Game Select')
             bui.set_analytics_screen('Teams Window')
         elif issubclass(sessiontype, bs.FreeForAllSession):
-            bui.app.ui_v1.set_main_menu_location('Free-for-All Game Select')
+            bui.app.ui_v1.set_main_menu_location('Sillies Free-for-All Game Select')
             bui.set_analytics_screen('FreeForAll Window')
         else:
             raise TypeError(f'Invalid sessiontype: {sessiontype}.')
@@ -170,7 +170,7 @@ class PlaylistBrowserWindow(bui.Window):
             plus.add_v1_account_transaction(
                 {
                     'type': 'ADD_PLAYLIST',
-                    'playlistType': 'Free-for-All',
+                    'playlistType': 'Sillies Free-for-All',
                     'playlistName': bui.Lstr(
                         resource='singleGamePlaylistNameText'
                     )
@@ -208,7 +208,7 @@ class PlaylistBrowserWindow(bui.Window):
             plus.add_v1_account_transaction(
                 {
                     'type': 'ADD_PLAYLIST',
-                    'playlistType': 'Team Tournament',
+                    'playlistType': 'Sillies Team Tournament',
                     'playlistName': bui.Lstr(
                         resource='singleGamePlaylistNameText'
                     )
@@ -262,7 +262,7 @@ class PlaylistBrowserWindow(bui.Window):
             plus.add_v1_account_transaction(
                 {
                     'type': 'ADD_PLAYLIST',
-                    'playlistType': 'Team Tournament',
+                    'playlistType': 'Sillies Team Tournament',
                     'playlistName': bui.Lstr(
                         translate=('playlistNames', 'Just Sports')
                     ).evaluate(),
@@ -291,7 +291,7 @@ class PlaylistBrowserWindow(bui.Window):
             plus.add_v1_account_transaction(
                 {
                     'type': 'ADD_PLAYLIST',
-                    'playlistType': 'Free-for-All',
+                    'playlistType': 'Sillies Free-for-All',
                     'playlistName': bui.Lstr(
                         translate=('playlistNames', 'Just Epic')
                     ).evaluate(),

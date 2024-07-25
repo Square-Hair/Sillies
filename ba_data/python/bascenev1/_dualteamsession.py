@@ -24,9 +24,9 @@ class DualTeamSession(MultiTeamSession):
     use_teams = True
     use_team_colors = True
 
-    _playlist_selection_var = 'Team Tournament Playlist Selection'
-    _playlist_randomize_var = 'Team Tournament Playlist Randomize'
-    _playlists_var = 'Team Tournament Playlists'
+    _playlist_selection_var = 'Sillies Team Tournament Playlist Selection'
+    _playlist_randomize_var = 'Sillies Team Tournament Playlist Randomize'
+    _playlists_var = 'Sillies Team Tournament Playlists'
 
     def __init__(self) -> None:
         babase.increment_analytics_count('Teams session start')

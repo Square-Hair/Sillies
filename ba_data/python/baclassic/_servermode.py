@@ -309,8 +309,8 @@ class ServerController:
         # Once we get here, simply modify our config to use this playlist.
         typename = (
             'teams'
-            if result['playlistType'] == 'Team Tournament'
-            else 'ffa' if result['playlistType'] == 'Free-for-All' else '??'
+            if result['playlistType'] == 'Sillies Team Tournament'
+            else 'ffa' if result['playlistType'] == 'Sillies Free-for-All' else '??'
         )
         plistname = result['playlistName']
         print(f'{Clr.SBLU}Got playlist: "{plistname}" ({typename}).{Clr.RST}')
@@ -357,9 +357,9 @@ class ServerController:
         ):
             self._playlist_name = 'ServerModePlaylist'
             if sessiontype is bascenev1.FreeForAllSession:
-                ptypename = 'Free-for-All'
+                ptypename = 'Sillies Free-for-All'
             elif sessiontype is bascenev1.DualTeamSession:
-                ptypename = 'Team Tournament'
+                ptypename = 'Sillies Team Tournament'
             elif sessiontype is bascenev1.CoopSession:
                 ptypename = 'Coop'
             else:
@@ -389,13 +389,13 @@ class ServerController:
             logging.info(startupmsg)
 
         if sessiontype is bascenev1.FreeForAllSession:
-            appcfg['Free-for-All Playlist Selection'] = self._playlist_name
-            appcfg['Free-for-All Playlist Randomize'] = (
+            appcfg['Sillies Free-for-All Playlist Selection'] = self._playlist_name
+            appcfg['Sillies Free-for-All Playlist Randomize'] = (
                 self._config.playlist_shuffle
             )
         elif sessiontype is bascenev1.DualTeamSession:
-            appcfg['Team Tournament Playlist Selection'] = self._playlist_name
-            appcfg['Team Tournament Playlist Randomize'] = (
+            appcfg['Sillies Team Tournament Playlist Selection'] = self._playlist_name
+            appcfg['Sillies Team Tournament Playlist Randomize'] = (
                 self._config.playlist_shuffle
             )
         elif sessiontype is bascenev1.CoopSession:

@@ -117,8 +117,8 @@ def _start_stress_test(args: _StressTestArgs) -> None:
             + '")...'
         )
     if playlist_type == 'Teams':
-        appconfig['Team Tournament Playlist Selection'] = args.playlist_name
-        appconfig['Team Tournament Playlist Randomize'] = 1
+        appconfig['Sillies Team Tournament Playlist Selection'] = args.playlist_name
+        appconfig['Sillies Team Tournament Playlist Randomize'] = 1
         babase.apptimer(
             1.0,
             babase.Call(
@@ -127,8 +127,8 @@ def _start_stress_test(args: _StressTestArgs) -> None:
             ),
         )
     else:
-        appconfig['Free-for-All Playlist Selection'] = args.playlist_name
-        appconfig['Free-for-All Playlist Randomize'] = 1
+        appconfig['Sillies Free-for-All Playlist Selection'] = args.playlist_name
+        appconfig['Sillies Free-for-All Playlist Randomize'] = 1
         babase.apptimer(
             1.0,
             babase.Call(

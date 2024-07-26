@@ -1385,6 +1385,8 @@ class Silly(bs.Actor):
 
         elif isinstance(msg, bs.FootConnectMessage):
             self.touched_floors += 1
+            if self._state == SillyState.JUMPING:
+                self._set_state(SillyState.ACTIONABLE)
 
         elif isinstance(msg, bs.FootDisconnectMessage):
             self.touched_floors -= 1

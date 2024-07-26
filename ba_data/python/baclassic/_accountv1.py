@@ -212,7 +212,7 @@ class AccountV1Subsystem:
                     'type': 'ADD_PLAYER_PROFILE',
                     'name': '__account__',
                     'profile': {
-                        'character': 'Silly',
+                        'character': 'Sucuk',
                         'color': [0.5, 0.25, 1.0],
                         'highlight': [0.5, 0.25, 1.0],
                     },

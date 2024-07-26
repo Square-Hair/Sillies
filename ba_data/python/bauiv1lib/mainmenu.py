@@ -78,8 +78,6 @@ class MainMenuWindow(bui.Window):
         self.button_color = (0.765, 0.506, 0.788)
         self.text_color = (0.976, 0.733, 1)
 
-        self._store_char_tex = self._get_store_char_tex()
-
         self._refresh()
         self._restore_state()
 
@@ -141,19 +139,6 @@ class MainMenuWindow(bui.Window):
             except Exception:
                 logging.exception('Error showing get-remote-app info.')
 
-    def _get_store_char_tex(self) -> str:
-        plus = bui.app.plus
-        assert plus is not None
-        return (
-            'storeCharacterXmas'
-            if plus.get_v1_account_misc_read_val('xmas', False)
-            else (
-                'storeCharacterEaster'
-                if plus.get_v1_account_misc_read_val('easter', False)
-                else 'storeCharacter'
-            )
-        )
-
     def _check_refresh(self) -> None:
         plus = bui.app.plus
         assert plus is not None
@@ -171,14 +156,10 @@ class MainMenuWindow(bui.Window):
         # bui.app.main_menu_window_refresh_check_count += 1
         # if bui.app.main_menu_window_refresh_check_count < 4:
         #     return
-
-        store_char_tex = self._get_store_char_tex()
         account_state_num = plus.get_v1_account_state_num()
         if (
             account_state_num != self._account_state_num
-            or store_char_tex != self._store_char_tex
         ):
-            self._store_char_tex = store_char_tex
             self._account_state_num = account_state_num
             account_state = self._account_state = plus.get_v1_account_state()
             self._account_type = (
@@ -355,18 +336,6 @@ class MainMenuWindow(bui.Window):
                 55
                 if uiscale is bui.UIScale.SMALL
                 else 55 if uiscale is bui.UIScale.MEDIUM else 70
-            )
-            bui.imagewidget(
-                parent=self._root_widget,
-                position=(
-                    h - icon_size * 0.5,
-                    v + self._button_height * scale - icon_size * 0.23,
-                ),
-                transition_delay=self._tdelay,
-                size=(icon_size, icon_size),
-                texture=bui.gettexture(self._store_char_tex),
-                tilt_scale=0.0,
-                draw_controller=store_button,
             )
             self._tdelay += self._t_delay_inc
         else:

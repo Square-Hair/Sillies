@@ -266,7 +266,7 @@ class ClassicSubsystem(babase.AppSubsystem):
             with activity.context:
                 globs = activity.globalsnode
                 if not globs.paused:
-                    bascenev1.getsound('refWhistle').play()
+                    bascenev1.getsound('refStop').play()
                     globs.paused = True
 
                 # FIXME: This should not be an attr on Actor.

@@ -408,7 +408,7 @@ class ProfileBrowserWindow(bui.Window):
             try:
                 char_index = sillies.index(p_info['character'])
             except Exception:
-                char_index = sillies.index('Silly')
+                char_index = sillies.index('Sucuk')
 
             assert isinstance(tval, str)
             txtw = bui.textwidget(

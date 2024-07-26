@@ -29,104 +29,6 @@ class BombFactory:
     and can be retrieved via bascenev1lib.actor.bomb.get_factory().
     """
 
-    bomb_mesh: bs.Mesh
-    """The bs.Mesh of a standard or ice bomb."""
-
-    sticky_bomb_mesh: bs.Mesh
-    """The bs.Mesh of a sticky-bomb."""
-
-    impact_bomb_mesh: bs.Mesh
-    """The bs.Mesh of an impact-bomb."""
-
-    land_mine_mesh: bs.Mesh
-    """The bs.Mesh of a land-mine."""
-
-    tnt_mesh: bs.Mesh
-    """The bs.Mesh of a tnt box."""
-
-    regular_tex: bs.Texture
-    """The bs.Texture for regular bombs."""
-
-    ice_tex: bs.Texture
-    """The bs.Texture for ice bombs."""
-
-    sticky_tex: bs.Texture
-    """The bs.Texture for sticky bombs."""
-
-    impact_tex: bs.Texture
-    """The bs.Texture for impact bombs."""
-
-    impact_lit_tex: bs.Texture
-    """The bs.Texture for impact bombs with lights lit."""
-
-    land_mine_tex: bs.Texture
-    """The bs.Texture for land-mines."""
-
-    land_mine_lit_tex: bs.Texture
-    """The bs.Texture for land-mines with the light lit."""
-
-    tnt_tex: bs.Texture
-    """The bs.Texture for tnt boxes."""
-
-    hiss_sound: bs.Sound
-    """The bs.Sound for the hiss sound an ice bomb makes."""
-
-    debris_fall_sound: bs.Sound
-    """The bs.Sound for random falling debris after an explosion."""
-
-    wood_debris_fall_sound: bs.Sound
-    """A bs.Sound for random wood debris falling after an explosion."""
-
-    explode_sounds: Sequence[bs.Sound]
-    """A tuple of bs.Sound-s for explosions."""
-
-    freeze_sound: bs.Sound
-    """A bs.Sound of an ice bomb freezing something."""
-
-    fuse_sound: bs.Sound
-    """A bs.Sound of a burning fuse."""
-
-    activate_sound: bs.Sound
-    """A bs.Sound for an activating impact bomb."""
-
-    warn_sound: bs.Sound
-    """A bs.Sound for an impact bomb about to explode due to time-out."""
-
-    bomb_material: bs.Material
-    """A bs.Material applied to all bombs."""
-
-    normal_sound_material: bs.Material
-    """A bs.Material that generates standard bomb noises on impacts, etc."""
-
-    sticky_material: bs.Material
-    """A bs.Material that makes 'splat' sounds and makes collisions softer."""
-
-    land_mine_no_explode_material: bs.Material
-    """A bs.Material that keeps land-mines from blowing up.
-       Applied to land-mines when they are created to allow land-mines to
-       touch without exploding."""
-
-    land_mine_blast_material: bs.Material
-    """A bs.Material applied to activated land-mines that causes them to
-       explode on impact."""
-
-    impact_blast_material: bs.Material
-    """A bs.Material applied to activated impact-bombs that causes them to
-       explode on impact."""
-
-    blast_material: bs.Material
-    """A bs.Material applied to bomb blast geometry which triggers impact
-       events with what it touches."""
-
-    dink_sounds: Sequence[bs.Sound]
-    """A tuple of bs.Sound-s for when bombs hit the ground."""
-
-    sticky_impact_sound: bs.Sound
-    """The bs.Sound for a squish made by a sticky bomb hitting something."""
-
-    roll_sound: bs.Sound
-    """bs.Sound for a rolling bomb."""
-
     _STORENAME = bs.storagename()
 
     @classmethod
@@ -393,14 +295,14 @@ class Blast(bs.Actor):
             bs.emitfx(
                 position=position,
                 velocity=velocity,
-                count=int(1.0 + random.random() * 4),
+                count=2,
                 emit_type='tendrils',
                 tendril_type='thin_smoke',
             )
         bs.emitfx(
             position=position,
             velocity=velocity,
-            count=int(4.0 + random.random() * 4),
+            count=2,
             emit_type='tendrils',
             tendril_type='ice' if self.blast_type == 'ice' else 'smoke',
         )
@@ -417,7 +319,7 @@ class Blast(bs.Actor):
                 bs.emitfx(
                     position=position,
                     velocity=velocity,
-                    count=30,
+                    count=3,
                     spread=2.0,
                     scale=0.4,
                     chunk_type='ice',
@@ -433,14 +335,14 @@ class Blast(bs.Actor):
                 bs.emitfx(
                     position=position,
                     velocity=velocity,
-                    count=int(4.0 + random.random() * 8),
+                    count=2,
                     spread=0.7,
                     chunk_type='slime',
                 )
                 bs.emitfx(
                     position=position,
                     velocity=velocity,
-                    count=int(4.0 + random.random() * 8),
+                    count=2,
                     scale=0.5,
                     spread=0.7,
                     chunk_type='slime',
@@ -448,7 +350,7 @@ class Blast(bs.Actor):
                 bs.emitfx(
                     position=position,
                     velocity=velocity,
-                    count=15,
+                    count=2,
                     scale=0.6,
                     chunk_type='slime',
                     emit_type='stickers',
@@ -456,7 +358,7 @@ class Blast(bs.Actor):
                 bs.emitfx(
                     position=position,
                     velocity=velocity,
-                    count=20,
+                    count=2,
                     scale=0.7,
                     chunk_type='spark',
                     emit_type='stickers',
@@ -464,7 +366,7 @@ class Blast(bs.Actor):
                 bs.emitfx(
                     position=position,
                     velocity=velocity,
-                    count=int(6.0 + random.random() * 12),
+                    count=2,
                     scale=0.8,
                     spread=1.5,
                     chunk_type='spark',
@@ -479,21 +381,21 @@ class Blast(bs.Actor):
                 bs.emitfx(
                     position=position,
                     velocity=velocity,
-                    count=int(4.0 + random.random() * 8),
+                    count=2,
                     scale=0.8,
                     chunk_type='metal',
                 )
                 bs.emitfx(
                     position=position,
                     velocity=velocity,
-                    count=int(4.0 + random.random() * 8),
+                    count=2,
                     scale=0.4,
                     chunk_type='metal',
                 )
                 bs.emitfx(
                     position=position,
                     velocity=velocity,
-                    count=20,
+                    count=2,
                     scale=0.7,
                     chunk_type='spark',
                     emit_type='stickers',
@@ -501,7 +403,7 @@ class Blast(bs.Actor):
                 bs.emitfx(
                     position=position,
                     velocity=velocity,
-                    count=int(8.0 + random.random() * 15),
+                    count=2,
                     scale=0.8,
                     spread=1.5,
                     chunk_type='spark',
@@ -517,20 +419,20 @@ class Blast(bs.Actor):
                     bs.emitfx(
                         position=position,
                         velocity=velocity,
-                        count=int(4.0 + random.random() * 8),
+                        count=2,
                         chunk_type='rock',
                     )
                     bs.emitfx(
                         position=position,
                         velocity=velocity,
-                        count=int(4.0 + random.random() * 8),
+                        count=2,
                         scale=0.5,
                         chunk_type='rock',
                     )
                 bs.emitfx(
                     position=position,
                     velocity=velocity,
-                    count=30,
+                    count=3,
                     scale=1.0 if self.blast_type == 'tnt' else 0.7,
                     chunk_type='spark',
                     emit_type='stickers',
@@ -538,7 +440,7 @@ class Blast(bs.Actor):
                 bs.emitfx(
                     position=position,
                     velocity=velocity,
-                    count=int(18.0 + random.random() * 20),
+                    count=2,
                     scale=1.0 if self.blast_type == 'tnt' else 0.8,
                     spread=1.5,
                     chunk_type='spark',
@@ -551,7 +453,7 @@ class Blast(bs.Actor):
                         bs.emitfx(
                             position=position,
                             velocity=velocity,
-                            count=int(20.0 + random.random() * 25),
+                            count=2,
                             scale=0.8,
                             spread=1.0,
                             chunk_type='splinter',
@@ -566,7 +468,7 @@ class Blast(bs.Actor):
                         bs.emitfx(
                             position=position,
                             velocity=velocity,
-                            count=int(10.0 + random.random() * 20),
+                            count=2,
                             scale=0.8,
                             spread=1.5,
                             chunk_type='spark',
@@ -582,7 +484,7 @@ class Blast(bs.Actor):
             'light',
             attrs={
                 'position': position,
-                'volume_intensity_scale': 10.0,
+                'volume_intensity_scale': 1.0,
                 'color': lcolor,
             },
         )

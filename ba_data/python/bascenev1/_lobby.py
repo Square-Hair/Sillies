@@ -447,7 +447,7 @@ class Chooser:
         if is_remote:
             # TODO: Pull this from the remote player.
             # (but make sure to filter it to the ones we've got).
-            self._character_names = ['Silly']
+            self._character_names = ['Sucuk']
         else:
             self._character_names = self.lobby.character_names_local_unlocked
 
@@ -470,7 +470,7 @@ class Chooser:
                 profile[1].get('character', '')
                 not in app.classic.silly_appearances
             ):
-                profile[1]['character'] = 'Silly'
+                profile[1]['character'] = 'Sucuk'
 
         # Add in a random one so we're ok even if there's no user profiles.
         self._profiles['_random'] = {}

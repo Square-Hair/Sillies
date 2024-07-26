@@ -90,7 +90,7 @@ class Silly(bs.Actor):
     # pylint: disable=too-many-locals
 
     node: bs.Node
-    """The 'Silly' bs.Node."""
+    """The 'Sucuk' bs.Node."""
 
     points_mult = 1
     curse_time: float | None = 5.0
@@ -104,7 +104,7 @@ class Silly(bs.Actor):
         self,
         color: Sequence[float] = (1.0, 1.0, 1.0),
         highlight: Sequence[float] = (0.5, 0.5, 0.5),
-        character: str = 'Silly',
+        character: str = 'Sucuk',
         source_player: bs.Player | None = None,
         start_invincible: bool = True,
         can_accept_powerups: bool = True,

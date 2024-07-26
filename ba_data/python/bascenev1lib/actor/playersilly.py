@@ -48,7 +48,7 @@ class PlayerSilly(Silly):
         player: bs.Player,
         color: Sequence[float] = (1.0, 1.0, 1.0),
         highlight: Sequence[float] = (0.5, 0.5, 0.5),
-        character: str = 'Silly',
+        character: str = 'Sucuk',
         powerups_expire: bool = True,
     ):
         """Create a silly for the provided bascenev1.Player.

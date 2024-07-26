@@ -1004,7 +1004,7 @@ class GameActivity(Activity[PlayerT, TeamT]):
                 position, angle if angle is not None else random.uniform(0, 360)
             )
         )
-        self._spawn_sound.play(1, position=silly.node.position)
+        self._spawn_sound.play(2, position=silly.node.position)
         light = _bascenev1.newnode('light', attrs={'color': light_color})
         silly.node.connectattr('position', light, 'position')
         animate(light, 'intensity', {0: 0, 0.25: 1, 0.5: 0})

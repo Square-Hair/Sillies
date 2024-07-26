@@ -127,6 +127,21 @@ class EditProfileWindow(bui.Window):
             self._existing_profile, {}
         )
 
+        # Load our mod profile settings. Make new ones if we don't have them yet.
+        self._silly_profiles = bs.app.config.get('Sillies Player Profiles')
+        if not self._silly_profiles:
+            self._silly_profiles = {
+                str(self._existing_profile): {
+                    'character': 'Caleb'
+                }
+            }
+        try:
+            blood_profile = self._silly_profiles.get(
+                self._existing_profile, {}
+            )
+        except AttributeError:
+            blood_profile = {'character': 'Caleb'}
+
         if 'global' in profile:
             self._global = profile['global']
         else:
@@ -149,7 +164,7 @@ class EditProfileWindow(bui.Window):
             # silly which has a similar effect)
             # try: p_len = len(bui.app.config['Player Profiles'])
             # except Exception: p_len = 0
-            # if p_len == 0: icon_index = self._sillies.index('Silly')
+            # if p_len == 0: icon_index = self._sillies.index('Sucuk')
             # else:
             random.seed()
             icon_index = random.randrange(len(self._sillies))
@@ -823,6 +838,12 @@ class EditProfileWindow(bui.Window):
             # Also lets be aware we're no longer global if we're taking a
             # new name (will need to re-request it).
             self._global = False
+
+        # Save our own mod-specific profile settings in our own section
+        cfg = bs.app.config
+        self._silly_profiles[self._existing_profile] = {'character': self._sillies[self._icon_index]}
+        cfg["Sillies Player Profiles"] = self._silly_profiles
+        cfg.apply_and_commit()
 
         plus.add_v1_account_transaction(
             {

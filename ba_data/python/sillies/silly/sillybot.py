@@ -88,7 +88,7 @@ class SillyBot(Silly):
     to the current activity.
     """
 
-    character = 'Silly'
+    character = 'Sucuk'
     punchiness = 0.5
     throwiness = 0.7
     static = False
@@ -588,7 +588,7 @@ class BomberBot(SillyBot):
     category: Bot Classes
     """
 
-    character = 'Silly'
+    character = 'Sucuk'
     punchiness = 0.3
 
 

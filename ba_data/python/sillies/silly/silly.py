@@ -30,18 +30,20 @@ BASE_PUNCH_POWER_SCALE = 0.7
 
 SHIELD_HITPOINTS_MAX = 150
 
-GLOVES_PUNCH_POWER_SCALE = 0.85
-GLOVES_PUNCH_COOLDOWN = 300
+GLOVES_PUNCH_COOLDOWN = 100
 
 BASE_IMPACT_SCALE = 1
 SHIELD_IMPACT_SCALE = 0.5
+
+PUNCH_POWER = 0.75
+PUNCH_MOMENTUM = 0.75
 
 JUMP_TIME = 1
 LIL_DASH_TIME = 0.7
 
 FREEZE_TIME = 2
 
-PUNCH_COOLDOWN = 400
+PUNCH_COOLDOWN = 300
 BOMB_COOLDOWN = 1000
 LIL_DASH_COOLDOWN = 1000
 JUMP_COOLDOWN = 1500
@@ -128,10 +130,6 @@ class Silly(bs.Actor):
 
         self.source_player = source_player
         self._dead = False
-        if self._demo_mode:  # Preserve old behavior.
-            self._punch_power_scale = BASE_PUNCH_POWER_SCALE
-        else:
-            self._punch_power_scale = factory.punch_power_scale
         self.fly = bs.getactivity().globalsnode.happy_thoughts_mode
         if isinstance(activity, bs.GameActivity):
             self._hockey = activity.map.is_hockey
@@ -343,6 +341,10 @@ class Silly(bs.Actor):
         return [v[0] * scale,
                 v[1] * scale,
                 v[2] * scale]
+
+    def _update_hold_memory_cd(self, action: str, cooldown: int):
+        if action in self._hold_memory:
+            self._hold_memory[action]['cd'][0] = cooldown
 
     @override
     def on_expire(self) -> None:
@@ -861,12 +863,13 @@ class Silly(bs.Actor):
         self.node.boxing_gloves = True
         self._has_boxing_gloves = True
         if self._demo_mode:  # Preserve old behavior.
-            self._punch_power_scale = GLOVES_PUNCH_POWER_SCALE
             self._punch_cooldown = GLOVES_PUNCH_COOLDOWN
         else:
             factory = SillyFactory.get()
-            self._punch_power_scale = GLOVES_PUNCH_POWER_SCALE
             self._punch_cooldown = GLOVES_PUNCH_COOLDOWN
+
+        # Update the hold memory cooldown
+        self._update_hold_memory_cd('punch', self._punch_cooldown)
 
     def equip_shields(self, decay: bool = False) -> None:
         """
@@ -1221,7 +1224,7 @@ class Silly(bs.Actor):
                 if damage >= 350:
                     assert msg.force_direction is not None
                     bs.show_damage_count(
-                        '-' + str(int(damage / 10)) + '%',
+                        '-' + f'{damage}',
                         msg.pos,
                         msg.force_direction,
                     )
@@ -1418,8 +1421,8 @@ class Silly(bs.Actor):
 
             # Only allow one hit per node per punch.
             if node and (node not in self._punched_nodes):
-                punch_momentum_angular = 0.75 * self._punch_power_scale
-                punch_power = 0.75 * self._punch_power_scale
+                punch_momentum_angular = PUNCH_MOMENTUM
+                punch_power = PUNCH_POWER
 
                 # Ok here's the deal:  we pass along our base velocity for use
                 # in the impulse damage calculations since that is a more
@@ -1740,11 +1743,9 @@ class Silly(bs.Actor):
 
     def _gloves_wear_off(self) -> None:
         if self._demo_mode:  # Preserve old behavior.
-            self._punch_power_scale = BASE_PUNCH_POWER_SCALE
             self._punch_cooldown = PUNCH_COOLDOWN
         else:
             factory = SillyFactory.get()
-            self._punch_power_scale = BASE_PUNCH_POWER_SCALE
             self._punch_cooldown = PUNCH_COOLDOWN
         self._has_boxing_gloves = False
         if self.node:
@@ -1753,6 +1754,8 @@ class Silly(bs.Actor):
             )
             self.node.boxing_gloves = False
             self.node.billboard_opacity = 0.0
+            # Update the hold memory cooldown
+            self._update_hold_memory_cd('punch', self._punch_cooldown)
 
     def _multi_bomb_wear_off_flash(self) -> None:
         if self.node:

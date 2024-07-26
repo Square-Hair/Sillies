@@ -75,6 +75,9 @@ class MainMenuWindow(bui.Window):
         self._settings_button: bui.Widget | None = None
         self._next_refresh_allow_time = 0.0
 
+        self.button_color = (0.765, 0.506, 0.788)
+        self.text_color = (0.976, 0.733, 1)
+
         self._store_char_tex = self._get_store_char_tex()
 
         self._refresh()
@@ -255,6 +258,7 @@ class MainMenuWindow(bui.Window):
                 size=(self._button_width, self._button_height),
                 scale=scale,
                 autoselect=self._use_autoselect,
+                color=self.button_color,
                 label=bui.Lstr(resource=self._r + '.settingsText'),
                 transition_delay=self._tdelay,
                 on_activate_call=self._settings,
@@ -339,6 +343,7 @@ class MainMenuWindow(bui.Window):
                 position=(h - this_b_width * 0.5 * scale, v),
                 size=(this_b_width, self._button_height),
                 scale=scale,
+                color=self.button_color,
                 on_activate_call=bui.WeakCall(self._on_store_pressed),
                 sale_scale=1.3,
                 transition_delay=self._tdelay,
@@ -377,6 +382,7 @@ class MainMenuWindow(bui.Window):
                 position=(h - self._button_width * 0.5 * scale, v),
                 size=(self._button_width, self._button_height),
                 scale=scale,
+                color=self.button_color,
                 label=bui.Lstr(
                     resource=self._r
                     + (
@@ -521,6 +527,7 @@ class MainMenuWindow(bui.Window):
                 position=(h - b_size * 0.5, v - b_size - b_buffer_2 + v_offs),
                 button_type='square',
                 size=(b_size, b_size),
+                color=self.button_color,
                 label=bui.charstr(
                     bui.SpecialChar.PLAY_BUTTON
                     if bs.is_replay_paused()
@@ -624,7 +631,7 @@ class MainMenuWindow(bui.Window):
         if plus.get_v1_account_state() == 'signed_in':
             account_type_name = plus.get_v1_account_display_string()
             account_type_icon = None
-            account_textcolor = (1.0, 1.0, 1.0)
+            account_textcolor = self.text_color
         else:
             account_type_name = bui.Lstr(
                 resource='notSignedInText',
@@ -704,8 +711,8 @@ class MainMenuWindow(bui.Window):
                 position=(self._width * 0.5 - this_b_width * 0.5, v + 90),
                 size=(this_b_width, 45),
                 autoselect=True,
-                color=(0.45, 0.55, 0.45),
-                textcolor=(0.7, 0.8, 0.7),
+                color=self.button_color,
+                textcolor=self.text_color,
                 label=bui.Lstr(
                     resource=(
                         'modeArcadeText'
@@ -742,6 +749,7 @@ class MainMenuWindow(bui.Window):
             size=(this_b_width, this_b_height),
             autoselect=self._use_autoselect,
             button_type='square',
+            color=self.button_color,
             label='',
             transition_delay=gather_delay,
             on_activate_call=self._gather_press,
@@ -778,6 +786,7 @@ class MainMenuWindow(bui.Window):
             size=(play_button_width, play_button_height),
             autoselect=self._use_autoselect,
             scale=scale,
+            color=self.button_color,
             text_res_scale=2.0,
             label=bui.Lstr(resource='playText'),
             transition_delay=self._t_delay_play,
@@ -803,6 +812,7 @@ class MainMenuWindow(bui.Window):
             size=(this_b_width, this_b_height),
             autoselect=self._use_autoselect,
             button_type='square',
+            color=self.button_color,
             label='',
             transition_delay=watch_delay,
             on_activate_call=self._watch_press,
@@ -838,6 +848,7 @@ class MainMenuWindow(bui.Window):
                 position=(h - this_b_width * 0.5 * scale, v),
                 size=(this_b_width, self._button_height),
                 scale=scale,
+                color=self.button_color,
                 label=account_type_name,
                 autoselect=self._use_autoselect,
                 on_activate_call=account_type_call,
@@ -880,6 +891,7 @@ class MainMenuWindow(bui.Window):
             position=(h - self._button_width * 0.5 * scale, v),
             scale=scale,
             autoselect=self._use_autoselect,
+            color=self.button_color,
             size=(self._button_width, self._button_height),
             label=bui.Lstr(resource=self._r + '.howToPlayText'),
             transition_delay=self._tdelay,
@@ -915,6 +927,7 @@ class MainMenuWindow(bui.Window):
             autoselect=self._use_autoselect,
             label=bui.Lstr(resource=self._r + '.creditsText'),
             scale=scale,
+            color=self.button_color,
             transition_delay=self._tdelay,
             on_activate_call=self._credits,
         )

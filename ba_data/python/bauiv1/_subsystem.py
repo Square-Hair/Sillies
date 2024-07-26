@@ -62,9 +62,9 @@ class UIV1Subsystem(babase.AppSubsystem):
         self.upkeeptimer: babase.AppTimer | None = None
         self.use_toolbars = _bauiv1.toolbar_test()
 
-        self.title_color = (0.72, 0.7, 0.75)
-        self.heading_color = (0.72, 0.7, 0.75)
-        self.infotextcolor = (0.7, 0.9, 0.7)
+        self.title_color = (0.976, 0.733, 1)
+        self.heading_color = (0.976, 0.733, 1)
+        self.infotextcolor = (0.976, 0.733, 1)
 
         # Switch our overall game selection UI flow between Play and
         # Private-party playlist selection modes; should do this in

@@ -30,7 +30,7 @@ BASE_PUNCH_POWER_SCALE = 0.7
 
 SHIELD_HITPOINTS_MAX = 150
 
-GLOVES_PUNCH_COOLDOWN = 100
+GLOVES_PUNCH_COOLDOWN = 200
 
 BASE_IMPACT_SCALE = 1
 SHIELD_IMPACT_SCALE = 0.5
@@ -43,7 +43,7 @@ LIL_DASH_TIME = 0.7
 
 FREEZE_TIME = 2
 
-PUNCH_COOLDOWN = 300
+PUNCH_COOLDOWN = 400
 BOMB_COOLDOWN = 1000
 LIL_DASH_COOLDOWN = 1000
 JUMP_COOLDOWN = 1500
@@ -233,7 +233,7 @@ class Silly(bs.Actor):
         if self._demo_mode:  # Preserve old behavior.
             self._punch_cooldown = PUNCH_COOLDOWN
         else:
-            self._punch_cooldown = factory.punch_cooldown
+            self._punch_cooldown = PUNCH_COOLDOWN
         self._jump_cooldown = JUMP_COOLDOWN
         self._pickup_cooldown = BOMB_COOLDOWN
         self._bomb_cooldown = LIL_DASH_COOLDOWN

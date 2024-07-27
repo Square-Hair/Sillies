@@ -170,10 +170,7 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
                 assert self.version.node
                 bs.animate(self.version.node, 'opacity', {2.3: 0, 3.0: 1.0})
 
-        mesh = bs.getmesh('thePadLevel')
         trees_mesh = bs.getmesh('trees')
-        bottom_mesh = bs.getmesh('thePadLevelBottom')
-        color_texture = bs.gettexture('thePadLevelColor')
         trees_texture = bs.gettexture('treesColor')
         bgtex = bs.gettexture('menuBG')
         bgmesh = bs.getmesh('thePadBG')
@@ -190,17 +187,6 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
         gnode.vignette_outer = (0.45, 0.55, 0.54)
         gnode.vignette_inner = (0.99, 0.98, 0.98)
 
-        self.vr_bottom_fill = bs.NodeActor(
-            bs.newnode(
-                'terrain',
-                attrs={
-                    'mesh': vr_bottom_fill_mesh,
-                    'lighting': False,
-                    'vr_only': True,
-                    'color_texture': color_texture,
-                },
-            )
-        )
         self.vr_top_fill = bs.NodeActor(
             bs.newnode(
                 'terrain',

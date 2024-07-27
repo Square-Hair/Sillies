@@ -349,25 +349,7 @@ class PlayOptionsWindow(PopupWindow):
             )
 
         # Show tutorial.
-        show_tutorial = bool(bui.app.config.get('Show Tutorial', True))
-
-        def _cb_callback_2(val: bool) -> None:
-            cfg = bui.app.config
-            cfg['Show Tutorial'] = val
-            cfg.commit()
-
-        self._show_tutorial_check_box = bui.checkboxwidget(
-            parent=self.root_widget,
-            position=(110, 151),
-            scale=1.0,
-            size=(250, 30),
-            autoselect=True,
-            text=bui.Lstr(resource=self._r + '.showTutorialText'),
-            maxwidth=300,
-            textcolor=(0.8, 0.8, 0.8),
-            value=show_tutorial,
-            on_value_change_call=_cb_callback_2,
-        )
+        show_tutorial = False
 
         # Grumble: current autoselect doesn't do a very good job
         # with checkboxes.
@@ -385,20 +367,11 @@ class PlayOptionsWindow(PopupWindow):
                     edit=self._shuffle_check_box,
                     up_widget=self._custom_colors_names_button,
                 )
-            else:
-                bui.widget(
-                    edit=self._custom_colors_names_button,
-                    down_widget=self._show_tutorial_check_box,
-                )
-                bui.widget(
-                    edit=self._show_tutorial_check_box,
-                    up_widget=self._custom_colors_names_button,
-                )
 
         self._ok_button = bui.buttonwidget(
             parent=self.root_widget,
             position=(70, 44),
-            size=(200, 45),
+            size=(200, 70),
             scale=1.8,
             text_res_scale=1.5,
             on_activate_call=self._on_ok_press,
@@ -406,10 +379,6 @@ class PlayOptionsWindow(PopupWindow):
             label=bui.Lstr(
                 resource='okText' if self._selecting_mode else 'playText'
             ),
-        )
-
-        bui.widget(
-            edit=self._ok_button, up_widget=self._show_tutorial_check_box
         )
 
         bui.containerwidget(

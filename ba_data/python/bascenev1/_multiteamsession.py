@@ -69,7 +69,7 @@ class MultiTeamSession(Session):
         self._series_length: int = int(cfg.get('Teams Series Length', 7))
         self._ffa_series_length: int = int(cfg.get('FFA Series Length', 24))
 
-        show_tutorial = cfg.get('Show Tutorial', True)
+        show_tutorial = False
 
         # Special case: don't show tutorial while stress testing.
         if classic.stress_test_update_timer is not None:
@@ -77,15 +77,7 @@ class MultiTeamSession(Session):
 
         self._tutorial_activity_instance: bascenev1.Activity | None
         if show_tutorial:
-            from bascenev1lib.tutorial import TutorialActivity
 
-            tutorial_activity = TutorialActivity
-
-            # Get this loading.
-            self._tutorial_activity_instance = _bascenev1.newactivity(
-                tutorial_activity
-            )
-        else:
             self._tutorial_activity_instance = None
 
         self._playlist_name = cfg.get(
@@ -185,7 +177,6 @@ class MultiTeamSession(Session):
         self, activity: bascenev1.Activity, results: Any
     ) -> None:
         # pylint: disable=cyclic-import
-        from bascenev1lib.tutorial import TutorialActivity
         from bascenev1lib.activity.multiteamvictory import (
             TeamSeriesVictoryScoreScreenActivity,
         )
@@ -195,21 +186,9 @@ class MultiTeamSession(Session):
             ScoreScreenActivity,
         )
 
-        # If we have a tutorial to show, that's the first thing we do no
-        # matter what.
-        if self._tutorial_activity_instance is not None:
-            self.setactivity(self._tutorial_activity_instance)
-            self._tutorial_activity_instance = None
-
-        # If we're leaving the tutorial activity, pop a transition activity
-        # to transition us into a round gracefully (otherwise we'd snap from
-        # one terrain to another instantly).
-        elif isinstance(activity, TutorialActivity):
-            self.setactivity(_bascenev1.newactivity(TransitionActivity))
-
         # If we're in a between-round activity or a restart-activity, hop
         # into a round.
-        elif isinstance(
+        if isinstance(
             activity, (JoinActivity, TransitionActivity, ScoreScreenActivity)
         ):
             # If we're coming from a series-end activity, reset scores.

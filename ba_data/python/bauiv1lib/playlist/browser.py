@@ -189,7 +189,7 @@ class PlaylistBrowserWindow(bui.Window):
                                 'Kills to Win Per Player': 10,
                                 'Respawn Times': 1.0,
                                 'Time Limit': 300,
-                                'map': 'Doom Shroom',
+                                'map': 'Silly Stadium',
                             },
                         },
                         {
@@ -199,7 +199,7 @@ class PlaylistBrowserWindow(bui.Window):
                                 'Kills to Win Per Player': 10,
                                 'Respawn Times': 1.0,
                                 'Time Limit': 300,
-                                'map': 'Crag Castle',
+                                'map': 'Silly Stadium',
                             },
                         },
                     ],
@@ -223,7 +223,7 @@ class PlaylistBrowserWindow(bui.Window):
                         {
                             'type': 'bs_capture_the_flag.CTFGame',
                             'settings': {
-                                'map': 'Bridgit',
+                                'map': 'Silly Stadium',
                                 'Score to Win': 3,
                                 'Flag Idle Return Time': 30,
                                 'Flag Touch Return Time': 0,
@@ -235,7 +235,7 @@ class PlaylistBrowserWindow(bui.Window):
                         {
                             'type': 'bs_capture_the_flag.CTFGame',
                             'settings': {
-                                'map': 'Roundabout',
+                                'map': 'Silly Stadium',
                                 'Score to Win': 2,
                                 'Flag Idle Return Time': 30,
                                 'Flag Touch Return Time': 0,
@@ -247,7 +247,7 @@ class PlaylistBrowserWindow(bui.Window):
                         {
                             'type': 'bs_capture_the_flag.CTFGame',
                             'settings': {
-                                'map': 'Tip Top',
+                                'map': 'Silly Stadium',
                                 'Score to Win': 2,
                                 'Flag Idle Return Time': 30,
                                 'Flag Touch Return Time': 3,
@@ -271,7 +271,7 @@ class PlaylistBrowserWindow(bui.Window):
                             'type': 'bs_hockey.HockeyGame',
                             'settings': {
                                 'Time Limit': 0,
-                                'map': 'Hockey Stadium',
+                                'map': 'Silly Stadium',
                                 'Score to Win': 1,
                                 'Respawn Times': 1.0,
                             },
@@ -280,7 +280,7 @@ class PlaylistBrowserWindow(bui.Window):
                             'type': 'bs_football.FootballTeamGame',
                             'settings': {
                                 'Time Limit': 0,
-                                'map': 'Football Stadium',
+                                'map': 'Silly Stadium',
                                 'Score to Win': 21,
                                 'Respawn Times': 1.0,
                             },
@@ -300,7 +300,7 @@ class PlaylistBrowserWindow(bui.Window):
                             'type': 'bs_elimination.EliminationGame',
                             'settings': {
                                 'Time Limit': 120,
-                                'map': 'Tip Top',
+                                'map': 'Silly Stadium',
                                 'Respawn Times': 1.0,
                                 'Lives Per Player': 1,
                                 'Epic Mode': 1,

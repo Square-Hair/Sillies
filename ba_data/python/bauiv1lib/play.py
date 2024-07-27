@@ -134,109 +134,6 @@ class PlayWindow(bui.Window):
         )
         self._eyes_mesh = bui.getmesh('plasticEyesTransparent')
 
-        self._coop_button: bui.Widget | None = None
-
-        # Only show coop button in main-menu variant.
-        if self._is_main_menu:
-            self._coop_button = btn = bui.buttonwidget(
-                parent=self._root_widget,
-                position=(hoffs, v + (scl * 15)),
-                size=(
-                    scl * button_width,
-                    scl * 300,
-                ),
-                extra_touch_border_scale=0.1,
-                autoselect=True,
-                label='',
-                button_type='square',
-                text_scale=1.13,
-                on_activate_call=self._coop,
-            )
-
-            if bui.app.ui_v1.use_toolbars and uiscale is bui.UIScale.SMALL:
-                bui.widget(
-                    edit=btn,
-                    left_widget=bui.get_special_widget('back_button'),
-                )
-                bui.widget(
-                    edit=btn,
-                    up_widget=bui.get_special_widget('account_button'),
-                )
-                bui.widget(
-                    edit=btn,
-                    down_widget=bui.get_special_widget('settings_button'),
-                )
-
-            self._draw_dude(
-                0,
-                btn,
-                hoffs,
-                v,
-                scl,
-                position=(140, 30),
-                color=(0.72, 0.4, 1.0),
-            )
-            self._draw_dude(
-                1,
-                btn,
-                hoffs,
-                v,
-                scl,
-                position=(185, 53),
-                color=(0.71, 0.5, 1.0),
-            )
-            self._draw_dude(
-                2,
-                btn,
-                hoffs,
-                v,
-                scl,
-                position=(220, 27),
-                color=(0.67, 0.44, 1.0),
-            )
-            self._draw_dude(
-                3, btn, hoffs, v, scl, position=(255, 57), color=(0.7, 0.3, 1.0)
-            )
-            bui.imagewidget(
-                parent=self._root_widget,
-                draw_controller=btn,
-                position=(hoffs + scl * 230, v + scl * 153),
-                size=(scl * 115, scl * 115),
-                texture=self._lineup_tex,
-                mesh_transparent=angry_computer_transparent_mesh,
-            )
-
-            bui.textwidget(
-                parent=self._root_widget,
-                draw_controller=btn,
-                position=(hoffs + scl * (-10), v + scl * 95),
-                size=(scl * button_width, scl * 50),
-                text=bui.Lstr(
-                    resource='playModes.singlePlayerCoopText',
-                    fallback_resource='playModes.coopText',
-                ),
-                maxwidth=scl * button_width * 0.7,
-                res_scale=1.5,
-                h_align='center',
-                v_align='center',
-                color=(0.7, 0.9, 0.7, 1.0),
-                scale=scl * 2.3,
-            )
-
-            bui.textwidget(
-                parent=self._root_widget,
-                draw_controller=btn,
-                position=(hoffs + scl * (-10), v + (scl * 54)),
-                size=(scl * button_width, scl * 30),
-                text=bui.Lstr(resource=self._r + '.oneToFourPlayersText'),
-                h_align='center',
-                v_align='center',
-                scale=0.83 * scl,
-                flatness=1.0,
-                maxwidth=scl * button_width * 0.7,
-                color=clr,
-            )
-
         scl = 0.5 if self._is_main_menu else 0.68
         hoffs += 440 if self._is_main_menu else 216
         v += 180 if self._is_main_menu else -68
@@ -494,22 +391,14 @@ class PlayWindow(bui.Window):
             bui.containerwidget(
                 edit=self._root_widget,
                 on_cancel_call=self._back,
-                selected_child=(
-                    self._coop_button
-                    if self._is_main_menu
-                    else self._teams_button
-                ),
+                selected_child=self._teams_button,
             )
         else:
             bui.buttonwidget(edit=back_button, on_activate_call=self._back)
             bui.containerwidget(
                 edit=self._root_widget,
                 cancel_button=back_button,
-                selected_child=(
-                    self._coop_button
-                    if self._is_main_menu
-                    else self._teams_button
-                ),
+                selected_child=self._teams_button,
             )
 
         self._restore_state()
@@ -520,8 +409,7 @@ class PlayWindow(bui.Window):
         """Preload modules we use; avoids hitches (called in bg thread)."""
         import bauiv1lib.mainmenu as _unused1
         import bauiv1lib.account as _unused2
-        import bauiv1lib.coop.browser as _unused3
-        import bauiv1lib.playlist.browser as _unused4
+        import bauiv1lib.playlist.browser as _unused3
 
     def _back(self) -> None:
         # pylint: disable=cyclic-import
@@ -554,31 +442,6 @@ class PlayWindow(bui.Window):
             bui.containerwidget(
                 edit=self._root_widget, transition=self._transition_out
             )
-
-    def _coop(self) -> None:
-        # pylint: disable=cyclic-import
-        from bauiv1lib.account import show_sign_in_prompt
-        from bauiv1lib.coop.browser import CoopBrowserWindow
-
-        # no-op if our underlying widget is dead or on its way out.
-        if not self._root_widget or self._root_widget.transitioning_out:
-            return
-
-        plus = bui.app.plus
-        assert plus is not None
-
-        if plus.get_v1_account_state() != 'signed_in':
-            show_sign_in_prompt()
-            return
-        self._save_state()
-        bui.containerwidget(edit=self._root_widget, transition='out_left')
-        assert bui.app.classic is not None
-        bui.app.ui_v1.set_main_menu_window(
-            CoopBrowserWindow(
-                origin_widget=self._coop_button
-            ).get_root_widget(),
-            from_window=self._root_widget,
-        )
 
     def _team_tourney(self) -> None:
         # pylint: disable=cyclic-import
@@ -740,8 +603,6 @@ class PlayWindow(bui.Window):
             sel = self._root_widget.get_selected_child()
             if sel == self._teams_button:
                 sel_name = 'Team Games'
-            elif self._coop_button is not None and sel == self._coop_button:
-                sel_name = 'Co-op Games'
             elif sel == self._free_for_all_button:
                 sel_name = 'Sillies Free-for-All Games'
             elif sel == self._back_button:
@@ -759,18 +620,12 @@ class PlayWindow(bui.Window):
             sel_name = bui.app.ui_v1.window_states.get(type(self))
             if sel_name == 'Team Games':
                 sel = self._teams_button
-            elif sel_name == 'Co-op Games' and self._coop_button is not None:
-                sel = self._coop_button
             elif sel_name == 'Sillies Free-for-All Games':
                 sel = self._free_for_all_button
             elif sel_name == 'Back':
                 sel = self._back_button
             else:
-                sel = (
-                    self._coop_button
-                    if self._coop_button is not None
-                    else self._teams_button
-                )
+                sel = self._teams_button
             bui.containerwidget(edit=self._root_widget, selected_child=sel)
         except Exception:
             logging.exception('Error restoring state for %s.', self)

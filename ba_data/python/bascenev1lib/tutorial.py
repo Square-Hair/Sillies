@@ -186,7 +186,7 @@ class Team(bs.Team[Player]):
 
 class TutorialActivity(bs.Activity[Player, Team]):
     def __init__(self, settings: dict | None = None):
-        from bascenev1lib.maps import Rampage
+        from bascenev1lib.maps import SillyStadium
 
         if settings is None:
             settings = {}
@@ -198,7 +198,7 @@ class TutorialActivity(bs.Activity[Player, Team]):
         self.allow_pausing = True
         self.allow_kick_idle_players = False
         self._issued_warning = False
-        self._map_type = Rampage
+        self._map_type = Silly Stadium
         self._map_type.preload()
         self._jump_button_tex = bs.gettexture('buttonJump')
         self._pick_up_button_tex = bs.gettexture('buttonPickUp')

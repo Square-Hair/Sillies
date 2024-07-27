@@ -157,7 +157,7 @@ class ServerConfig:
     idle_exit_minutes: float | None = None
 
     # Should the tutorial be shown at the beginning of games?
-    show_tutorial: bool = False
+    show_tutorial: False
 
     # Team names (teams mode only).
     team_names: tuple[str, str] | None = None

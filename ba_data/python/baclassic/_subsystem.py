@@ -173,23 +173,7 @@ class ClassicSubsystem(babase.AppSubsystem):
 
         # FIXME: This should not be hard-coded.
         for maptype in [
-            stdmaps.HockeyStadium,
-            stdmaps.FootballStadium,
-            stdmaps.Bridgit,
-            stdmaps.BigG,
-            stdmaps.Roundabout,
-            stdmaps.MonkeyFace,
-            stdmaps.ZigZag,
-            stdmaps.ThePad,
-            stdmaps.DoomShroom,
-            stdmaps.LakeFrigid,
-            stdmaps.TipTop,
-            stdmaps.CragCastle,
-            stdmaps.TowerD,
-            stdmaps.HappyThoughts,
-            stdmaps.StepRightUp,
-            stdmaps.Courtyard,
-            stdmaps.Rampage,
+            stdmaps.SillyStadium,
         ]:
             bascenev1.register_map(maptype)
 

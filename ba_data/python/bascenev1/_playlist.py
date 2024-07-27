@@ -93,15 +93,6 @@ def filter_playlist(
                     'bascenev1lib.game.kingofthehill.KingOfTheHillGame'
                 )
             if entry['type'] in (
-                'Capture_the_Flag.CTFGame',
-                'bsCaptureTheFlag.CTFGame',
-                'bs_capture_the_flag.CTFGame',
-                'bastd.game.capturetheflag.CaptureTheFlagGame',
-            ):
-                entry['type'] = (
-                    'bascenev1lib.game.capturetheflag.CaptureTheFlagGame'
-                )
-            if entry['type'] in (
                 'Death_Match.DeathMatchGame',
                 'bsDeathMatch.DeathMatchGame',
                 'bs_death_match.DeathMatchGame',
@@ -144,13 +135,6 @@ def filter_playlist(
                 'bastd.game.hockey.HockeyGame',
             ):
                 entry['type'] = 'bascenev1lib.game.hockey.HockeyGame'
-            if entry['type'] in (
-                'Keep_Away.KeepAwayGame',
-                'bsKeepAway.KeepAwayGame',
-                'bs_keep_away.KeepAwayGame',
-                'bastd.game.keepaway.KeepAwayGame',
-            ):
-                entry['type'] = 'bascenev1lib.game.keepaway.KeepAwayGame'
             if entry['type'] in (
                 'Race.RaceGame',
                 'bsRace.RaceGame',
@@ -260,6 +244,6 @@ def get_default_teams_playlist() -> PlaylistType:
                 'Time Limit': 600,
                 'map': 'Silly Stadium',
             },
-            'type': 'bs_capture_the_flag.CTFGame',
+            'type': 'bs_death_match.DeathMatchGame',
         },
     ]

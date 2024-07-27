@@ -779,12 +779,12 @@ class Bomb(bs.Actor):
                 sticky = True
                 mesh = factory.sticky_bomb_mesh
                 rtype = 'sharper'
-                rscale = 1.8
+                rscale = 0.4
             else:
                 sticky = False
                 mesh = factory.bomb_mesh
                 rtype = 'sharper'
-                rscale = 1.8
+                rscale = 0.2
             if self.bomb_type == 'ice':
                 tex = factory.ice_tex
             elif self.bomb_type == 'sticky':

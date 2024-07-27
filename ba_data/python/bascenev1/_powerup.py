@@ -52,7 +52,6 @@ def get_default_powerup_distribution() -> Sequence[tuple[str, int]]:
         ('ice_bombs', 3),
         ('punch', 3),
         ('impact_bombs', 3),
-        ('land_mines', 2),
         ('sticky_bombs', 3),
         ('shield', 2),
         ('health', 1),

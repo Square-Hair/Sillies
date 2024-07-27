@@ -76,7 +76,6 @@ class ChosenOneGame(bs.TeamGameActivity[Player, Team]):
                 ('Short', 0.5),
                 ('Normal', 1.0),
                 ('Long', 2.0),
-                ('Longer', 4.0),
             ],
             default=1.0,
         ),

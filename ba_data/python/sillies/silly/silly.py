@@ -48,6 +48,8 @@ BOMB_COOLDOWN = 1000
 LIL_DASH_COOLDOWN = 1000
 JUMP_COOLDOWN = 1500
 
+CURSE_TIME = 3
+
 class SillyState(Enum):
     """Silly's current state.
 
@@ -93,7 +95,7 @@ class Silly(bs.Actor):
     """The 'Sucuk' bs.Node."""
 
     points_mult = 1
-    curse_time: float | None = 5.0
+    curse_time: float | None = CURSE_TIME
     default_bomb_count = 1
     default_bomb_type = 'normal'
     default_boxing_gloves = False
@@ -227,7 +229,6 @@ class Silly(bs.Actor):
         self._max_bomb_count = self.default_bomb_count
         self.bomb_type_default = self.default_bomb_type
         self.bomb_type = self.bomb_type_default
-        self.land_mine_count = 0
         self.blast_radius = 2.0
         self.powerups_expire = powerups_expire
         if self._demo_mode:  # Preserve old behavior.
@@ -989,8 +990,6 @@ class Silly(bs.Actor):
                         POWERUP_WEAR_OFF_TIME / 1000.0,
                         bs.WeakCall(self._multi_bomb_wear_off),
                     )
-            elif msg.poweruptype == 'land_mines':
-                self.set_land_mine_count(min(self.land_mine_count + 3, 3))
             elif msg.poweruptype == 'impact_bombs':
                 self.bomb_type = 'impact'
                 tex = self._get_bomb_type_tex()
@@ -1464,7 +1463,7 @@ class Silly(bs.Actor):
                     # Uppercut
                     if self._state == SillyState.JUMPING:
                         # Yay :3
-                        self.node.handlemessage(bs.CelebrateMessage(1))
+                        self.node.handlemessage(bs.CelebrateMessage(0.5))
                         # Play sound
                         SillyFactory.get().uppercut_sound.play(position=self.node.position, volume=1.0)
                         # Emit
@@ -1534,6 +1533,10 @@ class Silly(bs.Actor):
                 #        mag,
                 #    )
 
+        elif isinstance(msg, bs.CelebrateMessage):
+            if self.node:
+                self.node.handlemessage('celebrate', int(msg.duration * 1000))
+
     def drop_bomb(self) -> Bomb | None:
         """
         Tell the Silly to drop one of his bombs, and returns
@@ -1542,22 +1545,17 @@ class Silly(bs.Actor):
         drop a bomb, returns None.
         """
 
-        if (self.land_mine_count <= 0 and self.bomb_count <= 0) or self.frozen:
+        # Yay :3
+        self.node.handlemessage(bs.CelebrateMessage(0.45))
+
+        if self.bomb_count <= 0 or self.frozen:
             return None
         assert self.node
         pos = self.node.position_forward
         vel = self.node.velocity
 
-        # Yay :3
-        self.node.handlemessage(bs.CelebrateMessage(0.45))
-
-        if self.land_mine_count > 0:
-            dropping_bomb = False
-            self.set_land_mine_count(self.land_mine_count - 1)
-            bomb_type = 'land_mine'
-        else:
-            dropping_bomb = True
-            bomb_type = self.bomb_type
+        dropping_bomb = True
+        bomb_type = self.bomb_type
 
         bomb = Bomb(
             position=(pos[0], pos[1] - 0.0, pos[2]),
@@ -1595,18 +1593,6 @@ class Silly(bs.Actor):
                                     dir[0], 0, dir[2])
 
         return bomb
-
-    def set_land_mine_count(self, count: int) -> None:
-        """Set the number of land-mines this Silly is carrying."""
-        self.land_mine_count = count
-        if self.node:
-            if self.land_mine_count != 0:
-                self.node.counter_text = 'x' + str(self.land_mine_count)
-                self.node.counter_texture = (
-                    PowerupBoxFactory.get().tex_land_mines
-                )
-            else:
-                self.node.counter_text = ''
 
     def curse_explode(self, source_player: bs.Player | None = None) -> None:
         """Explode the poor Silly spectacularly."""

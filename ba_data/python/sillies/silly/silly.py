@@ -18,6 +18,7 @@ from bascenev1lib.actor.bomb import Bomb, Blast
 from bascenev1lib.actor.powerupbox import PowerupBoxFactory, PowerupBox
 from sillies.silly.silly_factory import SillyFactory
 from bascenev1lib.gameutils import SharedObjects
+from bascenev1._messages import DeathType
 
 if TYPE_CHECKING:
     from typing import Any, Sequence, Callable
@@ -1370,9 +1371,12 @@ class Silly(bs.Actor):
                     self.node.delete()
             elif self.node:
                 self.node.hurt = 1.0
-                bs.timer(0.1, bs.Call(self.shatter, extreme=True))
-                bs.getactivity().globalsnode.slow_motion = True
-                bs.timer(0.2, lambda: setattr(bs.getactivity().globalsnode, 'slow_motion', False))
+                # We want to shatter and do cool slow mo...
+                # ...but only if we didn't leave
+                if msg.how is not bs.DeathType.LEFT_GAME:
+                    bs.timer(0.1, bs.Call(self.shatter, extreme=True))
+                    bs.getactivity().globalsnode.slow_motion = True
+                    bs.timer(0.2, lambda: setattr(bs.getactivity().globalsnode, 'slow_motion', False))
                 if self.play_big_death_sound and not wasdead:
                     SillyFactory.get().single_player_death_sound.play()
                 self.node.dead = True

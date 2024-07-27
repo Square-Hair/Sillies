@@ -40,6 +40,7 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
         self._language: str | None = None
         self._update_timer: bs.Timer | None = None
         self._attract_mode_timer: bs.Timer | None = None
+        self._logo_sound = bs.getsound('menuLogoHit')
 
     @override
     def on_transition_in(self) -> None:
@@ -422,6 +423,9 @@ class MainMenuActivity(bs.Activity[bs.Player, bs.Team]):
         self._word_actors.append(logo)
         if not bs.app.classic.main_menu_did_initial_transition:
             bs.animate(logo.node, 'opacity', {0.0: 0.0, 0.5: 1})
+
+        # Sound
+        bs.timer(delay+0.15, self._logo_sound.play)
 
         # Add a bit of stop-motion-y jitter to the logo
         # (unless we're in VR mode in which case its best to

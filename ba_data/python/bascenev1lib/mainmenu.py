@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, override
 
 import bascenev1 as bs
 import bauiv1 as bui
+from sillies import debug
 
 if TYPE_CHECKING:
     from typing import Any
@@ -599,6 +600,49 @@ def _preload4() -> None:
 
     FlagFactory.get()
 
+first_run = True
+
+class SplashScreenActivity(bs.Activity[bs.Player, bs.Team]):
+    def __init__(self, settings: dict):
+        super().__init__(settings)
+        self._duration = 3
+
+        bui.lock_all_input()
+
+        self._tex = bs.gettexture('squarehairLogo')
+
+    def _start_preloads(self) -> None:
+        # FIXME: The func that calls us back doesn't save/restore state
+        #  or check for a dead activity so we have to do that ourself.
+        if self.expired:
+            return
+        with self.context:
+            _preload1()
+
+    def on_transition_in(self) -> None:
+        from bascenev1lib.actor.splashbackground import SplashBackground
+        from bascenev1lib.actor.image import Image
+        self._ding_sound: bs.Sound = bs.getsound('squareHairSound')
+        bs.timer(0.5, self._ding_sound.play)
+        bs.Activity.on_transition_in(self)
+        bui.add_clean_frame_callback(bs.WeakCall(self._start_preloads))
+        self._background = SplashBackground(fade_time=0.3, start_faded=True, show_logo=False)
+        position_image = (0,10)
+        self._image = Image(self._tex,
+                            transition='fadeOut',
+                            position=position_image,
+                            scale=(600, 600),
+                            transition_delay=3,
+                            transition_out_delay=self._duration-1.3
+                        ).autoretain()
+        bs.animate(self._image.node, 'opacity', {2.7: 1, 3: 0})
+        bs.timer(self._duration, self.safe_end)
+
+    def safe_end(self):
+        bui.unlock_all_input()
+        self.end()
+
+first_run = True
 
 class MainMenuSession(bs.Session):
     """Session that runs the main menu environment."""
@@ -609,7 +653,19 @@ class MainMenuSession(bs.Session):
 
         super().__init__([self._activity_deps])
         self._locked = False
-        self.setactivity(bs.newactivity(MainMenuActivity))
+        app = bs.app
+        global first_run
+
+        import bauiv1 as bui
+        if (
+            not app.classic.main_menu_did_initial_transition
+            and bui.app.config.get('Sillies Dev Intro', True)
+            ):
+                self.setactivity(bs.newactivity(SplashScreenActivity))
+        else:
+            app.classic.main_menu_did_initial_transition = True
+            self.setactivity(bs.newactivity(MainMenuActivity))
+        first_run = False
 
     @override
     def on_activity_end(self, activity: bs.Activity, results: Any) -> None:

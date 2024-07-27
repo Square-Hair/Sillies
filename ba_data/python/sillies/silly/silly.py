@@ -22,7 +22,7 @@ from bascenev1lib.gameutils import SharedObjects
 if TYPE_CHECKING:
     from typing import Any, Sequence, Callable
 
-POWERUP_WEAR_OFF_TIME = 20000
+POWERUP_WEAR_OFF_TIME = 5000
 
 
 BASE_HEALTH = 1500
